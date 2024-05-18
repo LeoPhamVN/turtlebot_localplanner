@@ -1,0 +1,15 @@
+<launch>
+  <node pkg="local_planner" type="localPlanner" name="localPlanner" output="screen" required="true">
+    <rosparam command="load" file="$(find local_planner)/config/local_planner_config.yaml" />
+    <param name="pathFolder" type="string" value="$(find local_planner)/paths" />
+  </node>
+
+  <node pkg="local_planner" type="pathFollower" name="pathFollower" output="screen" required="true">
+    <rosparam command="load" file="$(find local_planner)/config/path_follower_config.yaml" />
+  </node>
+
+  <!-- <node pkg="tf" type="static_transform_publisher" name="vehicleTransPublisher" args="-$(arg sensorOffsetX) -$(arg sensorOffsetY) 0 0 0 0 /sensor /vehicle 1000"/>
+
+  <node pkg="tf" type="static_transform_publisher" name="sensorTransPublisher" args="0 0 $(arg cameraOffsetZ) -1.5707963 0 -1.5707963 /sensor /camera 1000"/> -->
+
+</launch>
