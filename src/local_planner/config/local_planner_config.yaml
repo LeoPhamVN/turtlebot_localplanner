@@ -1,0 +1,65 @@
+# Local Planner
+sub_odometry_topic_         : /turtlebot/kobuki/odom_ground_truth
+sub_registered_scan_topic_  : /cloud_registered_scan
+sub_terrain_map_topic_      : /terrain_map
+sub_terrain_map_ext_topic_  : /terrain_map_ext
+sub_joystick_topic_         : /joy
+sub_waypoint_topic_         : /move_base_simple/goal #/way_point
+sub_speed_topic_            : /speed
+sub_navigation_boundary_topic_ : /navigation_boundary
+sub_added_obstacles_topic_  : /added_obstacles
+sub_check_obstacle_topic_   : /check_obstacle
+
+pub_path_topic_             : /path
+pub_vertical_obstacles_topic_ : /vertical_cloud_point
+pub_goal_topic_             : /goal_cloud_point
+# 
+kVehicleLength    : 0.4 
+kVehicleWidth     : 0.4 
+kSensorOffsetX    : 0.0
+kSensorOffsetY    : 0.0
+kTwoWayDrive      : true 
+# 
+kLaserVoxelSize   : 0.05 
+kTerrainVoxelSize : 0.1 
+
+kUseTerrainAnalysis : false 
+kCheckObstacle      : true 
+kCheckRotObstacle   : false 
+
+adjacentRange       : 3.5 
+
+kObstacleHeightThre : 0.25 
+kGroundHeightThre   : 0.1 
+kCostHeightThre     : 0.1 
+kCostScore          : 0.02 
+kUseCost            : false 
+kPointPerPathThre   : 2 
+kMinRelZ            : -0.4 
+# maxRelZ : -0.01 
+kMaxRelZ            : -0.02 
+# minRelZ : 0.3 
+# maxRelZ : 2.0
+kMaxSpeed           : 0.2
+kDirWeight          : 0.02 
+kDirThre            : 15.0 
+kDirToVehicle       : false 
+
+kPathScale          : 0.5 
+kMinPathScale       : 0.15 
+kPathScaleStep      : 0.01 
+kPathScaleBySpeed   : true 
+kMinPathRange       : 1.0 
+kPathRangeStep      : 1.5 
+
+kPathRangeBySpeed   : true 
+kPathCropByGoal     : true 
+
+kAutonomyMode       : true
+kJoyToSpeedDelay    : 2.0
+kJoyToCheckObstacleDelay : 5.0 
+kAutonomySpeed      : 2.0
+
+kGoalClearRange     : 0.5 
+kGoalX              : 3.0 
+kGoalY              : 0.0 
