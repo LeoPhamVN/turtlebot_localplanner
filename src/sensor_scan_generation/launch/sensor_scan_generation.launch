@@ -1,5 +1,6 @@
 <launch>
-
-  <node pkg="sensor_scan_generation" type="sensorScanGeneration" name="sensorScanGeneration" output="screen" required="true"/>
+  <node pkg="sensor_scan_generation" type="sensorScanGeneration" name="sensorScanGeneration" output="screen" required="true">
+    <rosparam command="load" file="$(find sensor_scan_generation)/config/sensor_scan_generation_config.yaml" />
+  </node>
 
 </launch>
