@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="depth_camera" type="depth_camera.py" name="depth_camera">
+    <rosparam command="load" file="$(find depth_camera)/config/depth_camera_config.yaml" />
+  </node>
+
+</launch>

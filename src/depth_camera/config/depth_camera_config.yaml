@@ -1,0 +1,10 @@
+# Depth camera
+sub_image_depth_scan_topic_   : /turtlebot/kobuki/realsense/depth/image_depth
+# sub_image_depth_scan_topic_   : /turtlebot/kobuki/realsense/depth/image_rect_raw
+sub_camera_info_topic_        : /turtlebot/kobuki/realsense/depth/camera_info
+pub_sensor_registered_scan_topic_ : /sensor_registered_scan
+
+kMinY : -0.6
+kMaxY :  0.6
+
+kMode : "SIL"
