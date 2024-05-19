@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="navigation" type="EKF_node.py" name="navigation">
+    <!-- <rosparam command="load" file="$(find navigation)/config/ config.yaml" /> -->
+  </node>
+
+</launch>
