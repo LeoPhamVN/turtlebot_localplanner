@@ -1,0 +1,18 @@
+# Sensor scan generation for SIL
+sub_odometry_topic_                 : /state_estimation
+sub_sensor_registered_scan_topic_   : /sensor_registered_scan
+
+pub_state_estimation_at_scan_topic_ : /state_estimation_at_scan
+pub_registered_scan_topic_          : /registered_scan
+
+frame_map_            : map
+frame_base_footprint_ : turtlebot/kobuki/base_footprint
+frame_sensor_         : sensor
+frame_sensor_at_scan_ : sensor_at_scan
+frame_vehicle_        : vehicle
+frame_camera_         : camera
+frame_depth_camera_ : turtlebot/kobuki/realsense_depth
+
+kSensorOffsetX    : 0.136       # [met]
+kSensorOffsetY    : -0.018      # [met]
+kSensorOffsetZ    : -0.116      # [met]
