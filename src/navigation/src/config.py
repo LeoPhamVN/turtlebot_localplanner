@@ -7,7 +7,7 @@ FRAME_DEPTH_CAMERA_SIL  = "turtlebot/kobuki/realsense_depth"
 FRAME_DEPTH_CAMERA_HIL  = "camera_depth_optical_frame"
 
 PUB_KEYFRAME_DEADRECKONING_TOPIC = "/keyframes_deadReckoning"
-PUB_ODOM_TOPIC          = "/odom"
+PUB_ODOM_TOPIC          = "/state_estimation"
 
 SUB_GROUND_TRUTH_TOPIC  = "/turtlebot/kobuki/odom_ground_truth"
 SUB_IMU_TOPIC           = "/turtlebot/kobuki/sensors/imu_data"
