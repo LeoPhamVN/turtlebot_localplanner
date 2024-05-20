@@ -41,6 +41,7 @@ double kVehicleLength = 0.6;
 double kVehicleWidth = 0.6;
 double kSensorOffsetX = 0;
 double kSensorOffsetY = 0;
+double kSensorOffsetZ = 0;
 bool kTwoWayDrive = true;
 double kLaserVoxelSize = 0.05;
 double kTerrainVoxelSize = 0.2;
@@ -196,20 +197,16 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloud2)
     for (int i = 0; i < laserCloudSize; i++) {
       point = laserCloud->points[i];
 
-      float pointX = point.x;
-      float pointY = point.y;
-      float pointZ = point.z;
+      // Convert orientation from camera frame to vehicle frame
+      float pointX = point.z;
+      float pointY = point.x;
+      float pointZ = point.y;
 
-      // float dis = sqrt((pointX - vehicleX) * (pointX - vehicleX) + (pointY - vehicleY) * (pointY - vehicleY));
       float dis = sqrt(pointX * pointX + pointY * pointY);
       if (dis < kAdjacentRange) {
-        // point.x = pointZ;
-        // point.y = pointX;
-        // point.z = pointY;
-        // point.z = pointY-0.1;
-        point.x = pointX;
-        point.y = pointY;
-        point.z = pointZ;
+        point.x = pointX + kSensorOffsetX;
+        point.y = pointY + kSensorOffsetY;
+        point.z = pointZ + kSensorOffsetZ;
         laserCloudCrop->push_back(point);
       }
     }
@@ -559,6 +556,7 @@ int main(int argc, char** argv)
   nhPrivate.getParam("kVehicleWidth", kVehicleWidth);
   nhPrivate.getParam("kSensorOffsetX", kSensorOffsetX);
   nhPrivate.getParam("kSensorOffsetY", kSensorOffsetY);
+  nhPrivate.getParam("kSensorOffsetZ", kSensorOffsetZ);
   nhPrivate.getParam("kTwoWayDrive", kTwoWayDrive);
   nhPrivate.getParam("kLaserVoxelSize", kLaserVoxelSize);
   nhPrivate.getParam("kTerrainVoxelSize", kTerrainVoxelSize);
@@ -710,7 +708,6 @@ int main(int argc, char** argv)
         *plannerCloud = *terrainCloudDwz;
       }
 
-
       float sinVehicleRoll = sin(vehicleRoll);
       float cosVehicleRoll = cos(vehicleRoll);
       float sinVehiclePitch = sin(vehiclePitch);
@@ -722,19 +719,9 @@ int main(int argc, char** argv)
       plannerCloudCrop->clear();
       int plannerCloudSize = plannerCloud->points.size();
       for (int i = 0; i < plannerCloudSize; i++) {
-        // float pointX1 = plannerCloud->points[i].x - vehicleX;
-        // float pointY1 = plannerCloud->points[i].y - vehicleY;
-        // float pointZ1 = plannerCloud->points[i].z - vehicleZ;
-
-        // point.x = pointX1 * cosVehicleYaw + pointY1 * sinVehicleYaw;
-        // point.y = -pointX1 * sinVehicleYaw + pointY1 * cosVehicleYaw;
-        float pointX1 = plannerCloud->points[i].x;
-        float pointY1 = plannerCloud->points[i].y;
-        float pointZ1 = plannerCloud->points[i].z;
-
-        point.x = pointZ1;
-        point.y = pointX1;
-        point.z = pointY1;
+        point.x = plannerCloud->points[i].x;
+        point.y = plannerCloud->points[i].y;
+        point.z = plannerCloud->points[i].z;
         point.intensity = plannerCloud->points[i].intensity;
 
         float dis = sqrt(point.x * point.x + point.y * point.y);
@@ -746,7 +733,7 @@ int main(int argc, char** argv)
       sensor_msgs::PointCloud2 pc_msg;
       pcl::toROSMsg(*plannerCloudCrop, pc_msg);
       pc_msg.header.stamp = ros::Time();
-      pc_msg.header.frame_id = "map";
+      pc_msg.header.frame_id = "vehicle";
       pubVerticalPointCloud.publish(pc_msg);
 
       sensor_msgs::PointCloud2 gpc_msg;
