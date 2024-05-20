@@ -198,7 +198,7 @@ class EKF:
         frame_id = FRAME_DEPTH_CAMERA_HIL
         child_frame_id = "sensor"
 
-        tf.TransformBroadcaster().sendTransform(translation, quaternion, timestamp, child_frame_id, frame_id)
+        # tf.TransformBroadcaster().sendTransform(translation, quaternion, timestamp, child_frame_id, frame_id)
 
     def spin(self):
         pass
