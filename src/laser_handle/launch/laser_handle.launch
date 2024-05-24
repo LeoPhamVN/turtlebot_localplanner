@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="laser_handle" type="laser_handle_node" name="laser_handle_node" output="screen" required="true">
+    <rosparam command="load" file="$(find laser_handle)/config/laser_handle_config.yaml" />
+  </node>
+
+</launch>
