@@ -230,75 +230,76 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloud2)
   }
 }
 
-void laserCloudAndOdometryHandler(const nav_msgs::Odometry::ConstPtr& odometry,
-                                  const sensor_msgs::PointCloud2ConstPtr& laserCloud2)
-{
-  laserCloudIn->clear();
-  laserCLoudInMapFrame->clear();
-  laserCloudCrop->clear();
+// void laserCloudAndOdometryHandler(const nav_msgs::Odometry::ConstPtr& odometry,
+//                                   const sensor_msgs::PointCloud2ConstPtr& laserCloud2)
+// {
+//   laserCloudIn->clear();
+//   laserCLoudInMapFrame->clear();
+//   laserCloudCrop->clear();
 
-  pcl::fromROSMsg(*laserCloud2, *laserCloudIn);
+//   pcl::fromROSMsg(*laserCloud2, *laserCloudIn);
 
-  odometryIn = *odometry;
+//   odometryIn = *odometry;
 
-  transformToMap.setOrigin(
-      tf::Vector3(odometryIn.pose.pose.position.x, odometryIn.pose.pose.position.y, odometryIn.pose.pose.position.z));
-  transformToMap.setRotation(tf::Quaternion(odometryIn.pose.pose.orientation.x, odometryIn.pose.pose.orientation.y,
-                                            odometryIn.pose.pose.orientation.z, odometryIn.pose.pose.orientation.w));
+//   transformToMap.setOrigin(
+//       tf::Vector3(odometryIn.pose.pose.position.x, odometryIn.pose.pose.position.y, odometryIn.pose.pose.position.z));
+//   transformToMap.setRotation(tf::Quaternion(odometryIn.pose.pose.orientation.x, odometryIn.pose.pose.orientation.y,
+//                                             odometryIn.pose.pose.orientation.z, odometryIn.pose.pose.orientation.w));
 
-  int laserCloudInNum = laserCloudIn->points.size();
+//   int laserCloudInNum = laserCloudIn->points.size();
 
-  pcl::PointXYZ p1;
-  pcl::PointXYZ p2;
-  tf::Vector3 vec;
+//   pcl::PointXYZI p1;
+//   pcl::PointXYZI p2;
+//   tf::Vector3 vec;
 
-  pcl::PointXYZI point;
-  laserCloudCrop->clear();
+//   pcl::PointXYZI point;
+//   laserCloudCrop->clear();
 
-  // Transform from camera frame to "vehicle" frame
-  for (int i = 0; i < laserCloudInNum; i++)
-  {
-    // Convert orientation from camera frame to vehicle frame
-      float pointX = point.z;
-      float pointY = point.x;
-      float pointZ = point.y;
+//   // Transform from camera frame to "vehicle" frame
+//   for (int i = 0; i < laserCloudInNum; i++)
+//   {
+//     point = laserCloudIn->points[i];
+//     // Convert orientation from camera frame to vehicle frame
+//     float pointX = point.z;
+//     float pointY = point.x;
+//     float pointZ = point.y;
 
-      float dis = sqrt(pointX * pointX + pointY * pointY);
-      if (dis < kAdjacentRange) {
-        point.x = pointX + kSensorOffsetX;
-        point.y = pointY + kSensorOffsetY;
-        point.z = pointZ + kSensorOffsetZ;
-        laserCloudCrop->push_back(point);
-      }
+//       float dis = sqrt(pointX * pointX + pointY * pointY);
+//       if (dis < kAdjacentRange) {
+//         point.x = pointX + kSensorOffsetX;
+//         point.y = pointY + kSensorOffsetY;
+//         point.z = pointZ + kSensorOffsetZ;
+//         laserCloudCrop->push_back(point);
+//       }
 
-    p1 = laserCloudIn->points[i];
-    vec.setX(p1.z + kSensorOffsetX);
-    vec.setY(p1.x + kSensorOffsetY);
-    vec.setZ(p1.y + kSensorOffsetZ);
+//     p1 = laserCloudIn->points[i];
+//     vec.setX(p1.z + kSensorOffsetX);
+//     vec.setY(p1.x + kSensorOffsetY);
+//     vec.setZ(p1.y + kSensorOffsetZ);
 
     
-    vec = transformToMap * vec;
+//     vec = transformToMap * vec;
 
-    p1.x = vec.x();
-    p1.y = vec.y();
-    p1.z = vec.z();
+//     p1.x = vec.x();
+//     p1.y = vec.y();
+//     p1.z = vec.z();
 
-    laserCLoudInMapFrame->points.push_back(p1);
-  }
+//     laserCLoudInMapFrame->points.push_back(p1);
+//   }
 
-  laserCloudDwz->clear();
-  laserDwzFilter.setInputCloud(laserCloudCrop);
-  laserDwzFilter.filter(*laserCloudDwz);
+//   laserCloudDwz->clear();
+//   laserDwzFilter.setInputCloud(laserCloudCrop);
+//   laserDwzFilter.filter(*laserCloudDwz);
 
-  newLaserCloud = true;
+//   newLaserCloud = true;
 
-  // Publish laser scan in "map" frame
-  sensor_msgs::PointCloud2 scan_data;
-  pcl::toROSMsg(*laserCLoudInMapFrame, scan_data);
-  scan_data.header.stamp        = laserCloud2->header.stamp;
-  scan_data.header.frame_id     = "map";
-  pubLaserCloud.publish(scan_data);
-}
+//   // Publish laser scan in "map" frame
+//   sensor_msgs::PointCloud2 scan_data;
+//   pcl::toROSMsg(*laserCLoudInMapFrame, scan_data);
+//   scan_data.header.stamp        = laserCloud2->header.stamp;
+//   scan_data.header.frame_id     = "map";
+//   pubLaserCloud.publish(scan_data);
+// }
 
 
 
@@ -694,26 +695,26 @@ int main(int argc, char** argv)
 
   // Test
   // ROS message filters
-  message_filters::Subscriber<nav_msgs::Odometry> subOdometrySync;
-  message_filters::Subscriber<sensor_msgs::PointCloud2> subLaserCloud;
-  typedef message_filters::sync_policies::ApproximateTime<nav_msgs::Odometry, sensor_msgs::PointCloud2> syncPolicy;
-  typedef message_filters::Synchronizer<syncPolicy> Sync;
-  boost::shared_ptr<Sync> sync_;
+  // message_filters::Subscriber<nav_msgs::Odometry> subOdometrySync;
+  // message_filters::Subscriber<sensor_msgs::PointCloud2> subLaserCloud;
+  // typedef message_filters::sync_policies::ApproximateTime<nav_msgs::Odometry, sensor_msgs::PointCloud2> syncPolicy;
+  // typedef message_filters::Synchronizer<syncPolicy> Sync;
+  // boost::shared_ptr<Sync> sync_;
 
-  // SUBCRIBE
-  subOdometrySync.subscribe(nh, sub_odometry_topic_, 1);
+  // // SUBCRIBE
+  // subOdometrySync.subscribe(nh, sub_odometry_topic_, 1);
 
-  subLaserCloud.subscribe(nh, "/sensor_registered_scan", 1);
+  // subLaserCloud.subscribe(nh, "/sensor_registered_scan", 1);
 
-  sync_.reset(new Sync(syncPolicy(100), subOdometrySync, subLaserCloud));
-  sync_->registerCallback(boost::bind(laserCloudAndOdometryHandler, _1, _2));
+  // sync_.reset(new Sync(syncPolicy(100), subOdometrySync, subLaserCloud));
+  // sync_->registerCallback(boost::bind(laserCloudAndOdometryHandler, _1, _2));
   // 
 
   ros::Subscriber subOdometry = nh.subscribe<nav_msgs::Odometry>
                                 (sub_odometry_topic_, 5, odometryHandler);
 
-  // ros::Subscriber subLaserCloud = nh.subscribe<sensor_msgs::PointCloud2>
-  //                                 (sub_registered_scan_topic_, 5, laserCloudHandler);
+  ros::Subscriber subLaserCloud = nh.subscribe<sensor_msgs::PointCloud2>
+                                  (sub_registered_scan_topic_, 5, laserCloudHandler);
 
   ros::Subscriber subTerrainCloud = nh.subscribe<sensor_msgs::PointCloud2>
                                     (sub_terrain_map_topic_, 5, terrainCloudHandler);
@@ -739,6 +740,8 @@ int main(int argc, char** argv)
   ros::Publisher pubGoalPointCloud =  nh.advertise<sensor_msgs::PointCloud2>(pub_goal_topic_, 10);
 
   nav_msgs::Path path;
+
+  pubLaserCloud = nh.advertise<sensor_msgs::PointCloud2>("test_pc", 2);
 
   #if PLOTPATHSET == 1
   ros::Publisher pubFreePaths = nh.advertise<sensor_msgs::PointCloud2> (pub_free_path_topic_, 2);
