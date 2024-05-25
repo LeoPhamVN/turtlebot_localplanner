@@ -4,7 +4,7 @@ sub_registered_scan_topic_  : /sensor_registered_scan
 sub_terrain_map_topic_      : /terrain_map
 sub_terrain_map_ext_topic_  : /terrain_map_ext
 sub_joystick_topic_         : /joy
-sub_waypoint_topic_         : /move_base_simple/goal #/way_point
+sub_waypoint_topic_         : /way_point #/move_base_simple/goal #
 sub_speed_topic_            : /speed
 sub_stop_topic_             : /stop
 sub_navigation_boundary_topic_ : /navigation_boundary
@@ -17,13 +17,22 @@ pub_free_path_topic_        : /free_paths
 pub_vertical_obstacles_topic_ : /vertical_cloud_point
 pub_goal_topic_             : /goal_cloud_point
 pub_speed_topic_            : /cmd_vel
+
+kSensorType                 : "lidar"
 # 
 kVehicleLength    : 0.4 
 kVehicleWidth     : 0.4 
-kSensorOffsetX    : 0.136       # [met]
-kSensorOffsetY    : -0.018      # [met]
-kSensorOffsetZ    : -0.116      # [met]
-kTwoWayDrive      : false 
+# # Depth camera params
+# kSensorOffsetX    : 0.136       # [met]
+# kSensorOffsetY    : -0.018      # [met]
+# kSensorOffsetZ    : -0.116      # [met]
+
+# Lidar params
+kSensorOffsetX    : -0.006        # [met]
+kSensorOffsetY    :  0.000        # [met]
+kSensorOffsetZ    : -0.179        # [met]
+
+kTwoWayDrive      : true 
 # 
 kLaserVoxelSize   : 0.05 
 kTerrainVoxelSize : 0.1 
@@ -63,26 +72,27 @@ kPathCropByGoal     : true
 kAutonomyMode       : true
 kJoyToSpeedDelay    : 2.0
 kJoyToCheckObstacleDelay : 5.0 
-kAutonomySpeed      : 2.0
+kAutonomySpeed      : 0.2   #2.0
 
 kGoalClearRange     : 0.5 
 kGoalX              : 0.0 
 kGoalY              : 0.0 
 
 kSubSkipNum       : 1
-kLookAheadDis     : 1.0
+kLookAheadDis     : 1.5
 # yawRateGain     : 7.5
 # stopYawRateGain : 7.5
-kYawRateGain      : 3.5
-kStopYawRateGain  : 7.5
+kYawRateGain      : 2.0
+kStopYawRateGain  : 2.0
 # maxYawRate      : 90.0
-kMaxYawRate       : 40.0
+kMaxYawRate       : 30.0
 # maxAccel        : 2.5
-kMaxAccel         : 1.5
-kSwitchTimeThre   : 1.0
-kDirDiffThre      : 0.5
-kStopDisThre      : 0.2
-kSlowDwnDisThre   : 0.85
+kMaxAccel         : 3.0
+# kSwitchTimeThre   : 1.0
+kDirDiffThre      : 0.2
+kStopDisThre      : 0.05
+kSlowDwnDisThre   : 0.4
+
 kUseInclRateToSlow: false
 kInclRateThre     : 120.0
 kSlowRate1        : 0.25
@@ -92,5 +102,6 @@ kSlowTime2        : 2.0
 kUseInclToStop    : false
 kInclThre         : 45.0
 kStopTime         : 5.0
+
 kNoRotAtStop      : false
 kNoRotAtGoal      : true

@@ -110,9 +110,11 @@ string pub_free_path_topic_;
 string pub_vertical_obstacles_topic_;
 string pub_goal_topic_;
 
+string kSensorType; 
+
 // typedef pcl::PointXYZRGBNormal PlannerCloudPointType;
 
-pcl::PointCloud<pcl::PointXYZI>::Ptr laserCloud(new pcl::PointCloud<pcl::PointXYZI>());
+pcl::PointCloud<pcl::PointXYZ>::Ptr laserCloud(new pcl::PointCloud<pcl::PointXYZ>());
 // pcl::PointCloud<pcl::PointXYZI>::Ptr vertical_surface_cloud(new pcl::PointCloud<pcl::PointXYZI>());
 pcl::PointCloud<pcl::PointXYZI>::Ptr laserCloudCrop(new pcl::PointCloud<pcl::PointXYZI>());
 pcl::PointCloud<pcl::PointXYZI>::Ptr laserCloudDwz(new pcl::PointCloud<pcl::PointXYZI>());
@@ -206,13 +208,29 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloud2)
     laserCloudCrop->clear();
     int laserCloudSize = laserCloud->points.size();
     for (int i = 0; i < laserCloudSize; i++) {
-      point = laserCloud->points[i];
+      point.x = laserCloud->points[i].x;
+      point.y = laserCloud->points[i].y;
+      point.z = laserCloud->points[i].z;
+
+      float pointX;
+      float pointY;
+      float pointZ;
 
       // Convert orientation from camera frame to vehicle frame
-      float pointX = point.z;
-      float pointY = point.x;
-      float pointZ = point.y;
+      if (kSensorType == "depthCamera")
+      {
+        pointX = point.z;
+        pointY = point.x;
+        pointZ = point.y;
 
+      }
+      else if (kSensorType == "lidar")
+      {
+        pointX = point.x;
+        pointY = point.y;
+        pointZ = point.z;
+      }
+      
       float dis = sqrt(pointX * pointX + pointY * pointY);
       if (dis < kAdjacentRange) {
         point.x = pointX + kSensorOffsetX;
@@ -225,7 +243,7 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloud2)
     laserCloudDwz->clear();
     laserDwzFilter.setInputCloud(laserCloudCrop);
     laserDwzFilter.filter(*laserCloudDwz);
-
+    
     newLaserCloud = true;
   }
 }
@@ -365,19 +383,19 @@ void joystickHandler(const sensor_msgs::Joy::ConstPtr& joy)
   }
 }
 
-void goalHandler(const geometry_msgs::PoseStamped::ConstPtr& goal)
+void goalHandler(const geometry_msgs::PointStamped::ConstPtr& goal)
 {
-  // kGoalX = goal->point.x;
-  // kGoalY = goal->point.y;
-  kGoalX = goal->pose.position.x;
-  kGoalY = goal->pose.position.y;
+  kGoalX = goal->point.x;
+  kGoalY = goal->point.y;
+  // kGoalX = goal->pose.position.x;
+  // kGoalY = goal->pose.position.y;
 
-  goalCloud->clear();
-  pcl::PointXYZI point;
-  point.x = kGoalX;
-  point.y = kGoalY;
-  point.z = 0.0;
-  goalCloud->push_back(point);
+  // goalCloud->clear();
+  // pcl::PointXYZI point;
+  // point.x = kGoalX;
+  // point.y = kGoalY;
+  // point.z = 0.0;
+  // goalCloud->push_back(point);
 }
 
 void speedHandler(const std_msgs::Float32::ConstPtr& speed)
@@ -693,6 +711,8 @@ int main(int argc, char** argv)
   nhPrivate.getParam("pub_vertical_obstacles_topic_", pub_vertical_obstacles_topic_);
   nhPrivate.getParam("pub_goal_topic_", pub_goal_topic_);
 
+  nhPrivate.getParam("kSensorType", kSensorType);
+
   // Test
   // ROS message filters
   // message_filters::Subscriber<nav_msgs::Odometry> subOdometrySync;
@@ -721,9 +741,9 @@ int main(int argc, char** argv)
 
   ros::Subscriber subJoystick = nh.subscribe<sensor_msgs::Joy> (sub_joystick_topic_, 5, joystickHandler);
 
-  // ros::Subscriber subGoal = nh.subscribe<geometry_msgs::PointStamped> (sub_waypoint_topic_ 5, goalHandler);
+  ros::Subscriber subGoal = nh.subscribe<geometry_msgs::PointStamped> (sub_waypoint_topic_, 5, goalHandler);
 
-  ros::Subscriber subGoal = nh.subscribe<geometry_msgs::PoseStamped> (sub_waypoint_topic_, 5, goalHandler);
+  // ros::Subscriber subGoal = nh.subscribe<geometry_msgs::PoseStamped> (sub_waypoint_topic_, 5, goalHandler);
 
   ros::Subscriber subSpeed = nh.subscribe<std_msgs::Float32> (sub_speed_topic_, 5, speedHandler);
 
@@ -835,7 +855,7 @@ int main(int argc, char** argv)
 
       sensor_msgs::PointCloud2 pc_msg;
       pcl::toROSMsg(*plannerCloudCrop, pc_msg);
-      pc_msg.header.stamp = ros::Time();
+      pc_msg.header.stamp = ros::Time().fromSec(odomTime);
       pc_msg.header.frame_id = "vehicle";
       pubVerticalPointCloud.publish(pc_msg);
 
