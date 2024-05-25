@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="depth_camera" type="depth_camera_node" name="depth_camera_node"/>
+
+</launch>
