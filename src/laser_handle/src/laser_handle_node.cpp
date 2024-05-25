@@ -40,10 +40,12 @@ struct Point {
 };
 
 std::vector<Point> getPointsBetween(const Point& p1, const Point& p2) {
-    std::vector<Point> points;
+    std::vector<Point> pointList;
 
     float dx = abs(p2.x - p1.x);
     float dy = abs(p2.y - p1.y);
+    if (dx == 0 && dy == 0)
+        return pointList;
     float sx = p1.x < p2.x ? kFloorExtendStep : -kFloorExtendStep;
     float sy = p1.y < p2.y ? kFloorExtendStep : -kFloorExtendStep;
     float err = dx - dy;
@@ -52,9 +54,9 @@ std::vector<Point> getPointsBetween(const Point& p1, const Point& p2) {
     float y = p1.y;
 
     while (true) {
-        points.push_back({x, y});
+        pointList.push_back({x, y});
 
-        if (abs(x) > abs(p2.x) || abs(y) > abs(p2.y)) {
+        if (abs(x) >= abs(p2.x) || abs(y) >= abs(p2.y)) {
             break;
         }
 
@@ -69,7 +71,7 @@ std::vector<Point> getPointsBetween(const Point& p1, const Point& p2) {
         }
     }
 
-    return points;
+    return pointList;
 }
 
 void laserScanCallback(const sensor_msgs::LaserScanConstPtr& input)
@@ -85,8 +87,8 @@ void laserScanCallback(const sensor_msgs::LaserScanConstPtr& input)
     // Create a new PCL point cloud to store the extended 3D points
     pcl::PointCloud<pcl::PointXYZ> extended_cloud;
 
-    int rows = 2 * kSensorRange / kFloorExtendStep;
-    int cols = 2 * kSensorRange / kFloorExtendStep;
+    int rows = 2 * kSensorRange / kFloorExtendStep + 1;
+    int cols = 2 * kSensorRange / kFloorExtendStep + 1;
     int arr[rows][cols] = {};
     Point p1 = {0, 0};
 
@@ -110,12 +112,12 @@ void laserScanCallback(const sensor_msgs::LaserScanConstPtr& input)
         }
 
         Point p2 = {point.x, point.y};
-        std::vector<Point> points = getPointsBetween(p1, p2);
+        std::vector<Point> pointLists = getPointsBetween(p1, p2);
 
-        for (const Point& p : points) 
+        for (const Point& p : pointLists) 
         {
-            int num_x = p.x / kFloorExtendStep + rows/2;
-            int num_y = p.y / kFloorExtendStep + cols/2;
+            int num_x = int(p.x / kFloorExtendStep + rows/2);
+            int num_y = int(p.y / kFloorExtendStep + cols/2);
             if (arr[num_x][num_y] != 1)
             {
                 pcl::PointXYZ floor_point;
