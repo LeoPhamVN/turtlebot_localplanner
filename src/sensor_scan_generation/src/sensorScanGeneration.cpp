@@ -68,6 +68,8 @@ double kSensorOffsetX;      // [met]
 double kSensorOffsetY;      // [met]
 double kSensorOffsetZ;      // [met]
 
+string kSensorType; 
+
 void OdometryHandler(const nav_msgs::Odometry::ConstPtr& odometry)
 {
   odometryIn = *odometry;
@@ -103,7 +105,8 @@ void laserCloudAndOdometryHandler(const nav_msgs::Odometry::ConstPtr& odometry,
 {
   laserCloudIn->clear();
   laserCLoudInMapFrame->clear();
-
+  // float a = (odometry->header.stamp).toSec() - (laserCloud2->header.stamp).toSec();
+  // std::cout<< a;
   pcl::fromROSMsg(*laserCloud2, *laserCloudIn);
 
   odometryIn = *odometry;
@@ -122,10 +125,21 @@ void laserCloudAndOdometryHandler(const nav_msgs::Odometry::ConstPtr& odometry,
   for (int i = 0; i < laserCloudInNum; i++)
   {
     p1 = laserCloudIn->points[i];
-    vec.setX(p1.z + kSensorOffsetX);
-    vec.setY(p1.x + kSensorOffsetY);
-    vec.setZ(p1.y + kSensorOffsetZ);
-
+    if (kSensorType == "depthCamera")
+    {
+      // Use for depth camera
+      vec.setX(p1.z + kSensorOffsetX);
+      vec.setY(p1.x + kSensorOffsetY);
+      vec.setZ(p1.y + kSensorOffsetZ);
+    }
+    else if (kSensorType == "lidar")
+    {
+      // Use for Lidar
+      vec.setX(p1.x + kSensorOffsetX);
+      vec.setY(p1.y + kSensorOffsetY);
+      vec.setZ(p1.z + kSensorOffsetZ);
+    }
+    
     vec = transformToMap * vec;
 
     p1.x = vec.x();
@@ -174,10 +188,12 @@ int main(int argc, char** argv)
   
   nhPrivate.getParam("pub_state_estimation_at_scan_topic_", pub_state_estimation_at_scan_topic_);
   nhPrivate.getParam("pub_registered_scan_topic_", pub_registered_scan_topic_);
-
+  
   nhPrivate.getParam("kSensorOffsetX", kSensorOffsetX);
   nhPrivate.getParam("kSensorOffsetY", kSensorOffsetY);
   nhPrivate.getParam("kSensorOffsetZ", kSensorOffsetZ);
+
+  nhPrivate.getParam("kSensorType", kSensorType);
 
 
   // ROS message filters
@@ -193,6 +209,7 @@ int main(int argc, char** argv)
   subLaserCloud.subscribe(nh, sub_sensor_registered_scan_topic_, 1);
 
   sync_.reset(new Sync(syncPolicy(100), subOdometry, subLaserCloud));
+  // sync_->setMaxIntervalDuration(ros::Duration(0.05)); // 50 milliseconds tolerance
   sync_->registerCallback(boost::bind(laserCloudAndOdometryHandler, _1, _2));
 
   subOdometry.registerCallback(boost::bind(OdometryHandler, _1));
