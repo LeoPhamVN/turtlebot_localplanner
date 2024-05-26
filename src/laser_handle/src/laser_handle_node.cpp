@@ -7,7 +7,140 @@
 #include <pcl/point_cloud.h>
 #include <message_filters/subscriber.h>
 
+#include <utility> // for std::pair
+
 using namespace std;
+
+class Grid {
+public:
+    // Constructor
+    Grid(double resolution, double halfLengthX, double halfLengthY)
+        : resolution(resolution), halfLengthX(halfLengthX), halfLengthY(halfLengthY) {
+        if (resolution <= 0 || halfLengthX <= 0 || halfLengthY <= 0) {
+            throw std::invalid_argument("Resolution and half lengths must be positive.");
+        }
+
+        // Calculate number of cells based on half lengths and resolution
+        sizeX =  static_cast<int>((2 * halfLengthX) / resolution);
+        sizeY =  static_cast<int>((2 * halfLengthY) / resolution);
+
+        // Initialize grid with 0s
+        grid.resize(sizeX, std::vector<int>(sizeY, 0));
+        gridOut.resize(sizeX, std::vector<int>(sizeY, 0));
+    }
+
+    // Method to convert meters to grid coordinates
+    std::pair<int, int> pos2Sub(double x, double y) const {
+        int gridX = static_cast<int>((x + halfLengthX) / resolution);
+        int gridY = static_cast<int>((y + halfLengthY) / resolution);
+
+        if (gridX < 0 || gridX >= sizeX || gridY < 0 || gridY >= sizeY) {
+            throw std::out_of_range("Coordinates are out of grid bounds.");
+        }
+
+        return {gridX, gridY};
+    }
+
+    // Method to convert grid coordinates to meters
+    std::pair<double, double> sub2Pos(int gridX, int gridY) const {
+        if (gridX < 0 || gridX >= sizeX || gridY < 0 || gridY >= sizeY) {
+            throw std::out_of_range("Grid coordinates are out of grid bounds.");
+        }
+
+        double x = gridX * resolution - halfLengthX;
+        double y = gridY * resolution - halfLengthY;
+
+        return {x, y};
+    }
+
+    // Method to set a cell to 1
+    void setCellOccupancy(double x, double y) {
+        auto [gridX, gridY] = pos2Sub(x, y);
+        grid[gridX][gridY] = 1;
+    }
+
+    // Method to get the value of a cell
+    int getCellValue(double x, double y) const {
+        auto [gridX, gridY] = pos2Sub(x, y);
+        return grid[gridX][gridY];
+    }
+
+    // Method to get the value of a cell in Sub
+    int getCellValueSub(int x, int y) const {
+        return grid[x][y];
+    }
+
+    // Method to get the value of a cell in Sub
+    int getCellValueSubOut(int x, int y) const {
+        return gridOut[x][y];
+    }
+
+
+    // Method to get list of cells on the line between two points
+    std::vector<std::pair<int, int>> getCellsOnLine(double x0, double y0, double x1, double y1) const {
+        auto [gridX0, gridY0] = pos2Sub(x0, y0);
+        auto [gridX1, gridY1] = pos2Sub(x1, y1);
+
+        std::vector<std::pair<int, int>> cells;
+        int dx = std::abs(gridX1 - gridX0);
+        int dy = std::abs(gridY1 - gridY0);
+
+        int sx = gridX0 < gridX1 ? 1 : -1;
+        int sy = gridY0 < gridY1 ? 1 : -1;
+
+        int err = dx - dy;
+
+        while (true) { 
+            int e2 = 2 * err;
+            if (e2 > -dy) {
+                err -= dy;
+                gridX0 += sx;
+            }
+            if (e2 < dx) {
+                err += dx;
+                gridY0 += sy;
+            }
+            if (gridX0 == gridX1 && gridY0 == gridY1) break;
+            cells.emplace_back(gridX0, gridY0);
+        }
+
+        return cells;
+    }
+
+    // Method to set cells along rays from the center
+    void setCellsAlongRays() {
+        auto [centerX, centerY] = pos2Sub(0.0, 0.0);
+
+        float angleStepRad = atan2(1, sizeX/2)*2;
+
+        for (float angle = 0; angle < 2*M_PI; angle += angleStepRad) {
+            double xEnd = (halfLengthX-resolution) * cos(angle);
+            double yEnd = (halfLengthY-resolution) * sin(angle);
+
+            auto cells = getCellsOnLine(0.0, 0.0, xEnd, yEnd);
+            for (const auto& cell : cells) {
+                if (grid[cell.first][cell.second] == 1 ||
+                    grid[cell.first+1][cell.second] == 1 ||
+                    grid[cell.first-1][cell.second] == 1 ||
+                    grid[cell.first][cell.second-1] == 1 ||
+                    grid[cell.first][cell.second-1] == 1) break;
+                gridOut[cell.first][cell.second] = 1;
+            }
+        }
+    }
+
+    int getSizeX() {return sizeX;}
+    int getSizeY() {return sizeY;}
+
+private:
+    double resolution; // Resolution of the grid in meters per cell
+    double halfLengthX; // Half length of the grid in the x direction in meters
+    double halfLengthY; // Half length of the grid in the y direction in meters
+    int sizeX;         // Number of cells in the x direction
+    int sizeY;         // Number of cells in the y direction
+    std::vector<std::vector<int>> grid; // 2D vector to store grid values
+    std::vector<std::vector<int>> gridOut; // 2D vector to store grid values
+};
 
 // Global node handle and publisher
 laser_geometry::LaserProjection projector;
@@ -24,20 +157,11 @@ string pub_sensor_registered_scan_topic_;
 
 
 
-int getSign(int num) {
-    if (num > 0) {
-        return 1; // Positive
-    } else if (num < 0) {
-        return -1; // Negative
-    } else {
-        return 0; // Zero
-    }
-}
-
 struct Point {
     float x;
     float y;
 };
+
 
 std::vector<Point> getPointsBetween(const Point& p1, const Point& p2) {
     std::vector<Point> pointList;
@@ -87,10 +211,7 @@ void laserScanCallback(const sensor_msgs::LaserScanConstPtr& input)
     // Create a new PCL point cloud to store the extended 3D points
     pcl::PointCloud<pcl::PointXYZ> extended_cloud;
 
-    int rows = 2 * kSensorRange / kFloorExtendStep + 1;
-    int cols = 2 * kSensorRange / kFloorExtendStep + 1;
-    int arr[rows][cols] = {};
-    Point p1 = {0, 0};
+    Grid laserScan(kFloorExtendStep, kSensorRange, kSensorRange);
 
     // Iterate through the original point cloud
     for (const auto& point : pcl_cloud.points)
@@ -111,24 +232,20 @@ void laserScanCallback(const sensor_msgs::LaserScanConstPtr& input)
                 extended_cloud.points.push_back(extended_point);
         }
 
-        Point p2 = {point.x, point.y};
-        std::vector<Point> pointLists = getPointsBetween(p1, p2);
+        // Floor grid
+        laserScan.setCellOccupancy(point.x, point.y);
 
-        for (const Point& p : pointLists) 
-        {
-            int num_x = int(p.x / kFloorExtendStep + rows/2);
-            int num_y = int(p.y / kFloorExtendStep + cols/2);
-            if (arr[num_x][num_y] != 1)
-            {
-                pcl::PointXYZ floor_point;
-                floor_point.x = p.x;
-                floor_point.y = p.y;
-                floor_point.z = kSensorHeight;
-                extended_cloud.points.push_back(floor_point);
-                arr[num_x][num_y] = 1;
+    }
+
+    laserScan.setCellsAlongRays();
+
+    for (int x = 0; x < laserScan.getSizeX(); ++x) {
+        for (int y = 0; y < laserScan.getSizeY(); ++y) {
+            if (laserScan.getCellValueSub(x, y) == 1 || laserScan.getCellValueSubOut(x, y) == 1 ) {
+                auto [meterX, meterY] = laserScan.sub2Pos(x, y);
+                extended_cloud.points.push_back(pcl::PointXYZ(meterX, meterY, kSensorHeight));
             }
         }
-
     }
 
     // Convert the extended PCL point cloud back to a ROS message
