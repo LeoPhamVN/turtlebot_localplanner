@@ -10,6 +10,7 @@ from nav_msgs.msg import Odometry
 from utils.EKF_3DOF_InputDisplacement_Heading import *
 from utils.Odometry import *
 from utils.Magnetometer import *
+# from geometry_msgs.msg import PoseStamped
 
 # from turtlebot_graph_slam.srv import ResetFilter, ResetFilterResponse
 # from .config import *
@@ -32,6 +33,9 @@ class EKF:
         # PUBLISHERS   
         # Publisher for sending Odometry
         self.odom_pub           = rospy.Publisher(PUB_ODOM_TOPIC, Odometry, queue_size=1)
+
+        # Publisher for sending Path
+        # self.path_pub           = rospy.Publisher(PUB_PATH_TOPIC, Odometry, queue_size=1)
         
         # SUBSCRIBERS
         self.odom_sub               = rospy.Subscriber(SUB_ODOM_TOPIC, JointState, self.get_odom) 
@@ -44,6 +48,8 @@ class EKF:
         self.odom   = OdomData(Qk)
         self.mag    = Magnetometer(Rk)
 
+        # self.path   = Path()
+        # self.path.header.frame_id = FRAME_MAP
         # if self.mode == "SIL":
         # Move
         while True:
@@ -55,6 +61,8 @@ class EKF:
         # self.reset_srv = rospy.Service(SERVICE_RESET_FILTER, ResetFilter, self.reset_filter)
     
         # TIMERS
+        # Timer for TP controller (Velocity Commands)
+        # rospy.Timer(rospy.Duration(1.0), self.pathPub)
 
         # Init EKF Filter
         self.ekf_filter = EKF_3DOF_InputDisplacement_Heading(self.xk, self.Pk, self.odom, self.mag)
@@ -103,6 +111,15 @@ class EKF:
             self.xk, self.Pk = self.ekf_filter.Localize(self.xk, self.Pk)
 
             self.x_map       = Pose3D.oplus(self.x_frame_k, self.xk)
+
+            # Plot path
+            # pose = PoseStamped()
+            # pose.header = odom.header
+            # pose.pose = odom.pose.pose
+
+            # self.path.poses.append(pose)
+            # self.path.header.stamp = rospy.Time.now()
+            # self.path_pub.publish(self.path)
 
             # Publish rviz
             self.odom_path_pub(timestamp)
@@ -199,6 +216,7 @@ class EKF:
         child_frame_id = "sensor"
 
         # tf.TransformBroadcaster().sendTransform(translation, quaternion, timestamp, child_frame_id, frame_id)
+        
 
     def spin(self):
         pass

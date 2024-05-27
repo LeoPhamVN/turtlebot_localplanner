@@ -14,6 +14,9 @@
     <include file="$(find navigation)/launch/navigation.launch">
     </include>
 
+    <!-- <node pkg="turtlebot_graph_slam" type="EKF_node.py" name="EKF_node"/> -->
+
+
     <!-- <node pkg="depth_camera" type="depth_camera_node" name="depth_camera_node"/> -->
 
     <!-- Convert depth camera to 3D point cloud -->

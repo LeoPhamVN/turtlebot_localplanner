@@ -1,5 +1,5 @@
 # Sensor scan generation for HIL
-sub_odometry_topic_                 : /state_estimation
+sub_odometry_topic_                 : /odom #/state_estimation
 sub_sensor_registered_scan_topic_   : /sensor_registered_scan
 
 pub_state_estimation_at_scan_topic_ : /state_estimation_at_scan
@@ -11,8 +11,17 @@ frame_sensor_         : sensor
 frame_sensor_at_scan_ : sensor_at_scan
 frame_vehicle_        : vehicle
 frame_camera_         : camera
-frame_depth_camera_   : camera_depth_optical_frame
+# frame_depth_camera_ : turtlebot/kobuki/realsense_depth
+frame_depth_camera_ : turtlebot/kobuki/rplidar
 
-kSensorOffsetX    : 0.136       # [met]
-kSensorOffsetY    : -0.018      # [met]
-kSensorOffsetZ    : -0.116      # [met]
+# # Depth camera params
+# kSensorOffsetX    : 0.136       # [met]
+# kSensorOffsetY    : -0.018      # [met]
+# kSensorOffsetZ    : -0.116      # [met]
+
+# Lidar params
+kSensorOffsetX    : -0.006       # [met]
+kSensorOffsetY    :  0.000      # [met]
+kSensorOffsetZ    : -0.179      # [met]
+
+kSensorType       : "lidar"
