@@ -34,7 +34,7 @@ kSensorOffsetZ    : -0.179        # [met]
 
 kTwoWayDrive      : true 
 # 
-kLaserVoxelSize   : 0.05 
+kLaserVoxelSize   : 0.1 #0.05 
 kTerrainVoxelSize : 0.1 
 
 kUseTerrainAnalysis : false 
@@ -56,7 +56,7 @@ kMaxRelZ            : -0.02
 # maxRelZ : 2.0
 kMaxSpeed           : 0.2
 kDirWeight          : 0.02 
-kDirThre            : 15.0 
+kDirThre            : 90.0 
 kDirToVehicle       : false 
 
 kPathScale          : 0.5 
@@ -72,7 +72,7 @@ kPathCropByGoal     : true
 kAutonomyMode       : true
 kJoyToSpeedDelay    : 2.0
 kJoyToCheckObstacleDelay : 5.0 
-kAutonomySpeed      : 0.15   #2.0
+kAutonomySpeed      : 0.2   #2.0
 
 kGoalClearRange     : 0.5 
 kGoalX              : 0.0 
