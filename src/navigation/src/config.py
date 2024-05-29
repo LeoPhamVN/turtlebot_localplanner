@@ -3,8 +3,6 @@ MODE              = "SIL"
 FRAME_MAP         = "map"
 FRAME_BASE        = "turtlebot/kobuki/base_footprint"
 FRAME_PREDICTED_BASE    = "turtlebot/kobuki/predicted_base_footprint"
-FRAME_DEPTH_CAMERA_SIL  = "turtlebot/kobuki/realsense_depth"
-FRAME_DEPTH_CAMERA_HIL  = "camera_depth_optical_frame"
 
 PUB_KEYFRAME_DEADRECKONING_TOPIC = "/keyframes_deadReckoning"
 PUB_ODOM_TOPIC          = "/state_estimation"
