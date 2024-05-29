@@ -58,10 +58,8 @@ class EKF:
                 break
         
         # SERVICES
-        # self.reset_srv = rospy.Service(SERVICE_RESET_FILTER, ResetFilter, self.reset_filter)
     
         # TIMERS
-        # Timer for TP controller (Velocity Commands)
         # rospy.Timer(rospy.Duration(1.0), self.pathPub)
 
         # Init EKF Filter
@@ -122,7 +120,7 @@ class EKF:
             # self.path_pub.publish(self.path)
 
             # Publish rviz
-            self.odom_path_pub(timestamp)
+            self.odom_path_pub(timestamp)             # Use for Localizarion only
 
             self.publish_tf_map(timestamp)
 
@@ -207,16 +205,6 @@ class EKF:
             "realsense_link",
             "camera_link"         
         )
-
-        # Transform theta from euler to quaternion
-        quaternion = tf.transformations.quaternion_from_euler(0, 0, 0)  # Convert euler angles to quaternion
-        translation = (0.0, 0.0, 0.0)
-
-        frame_id = FRAME_DEPTH_CAMERA_HIL
-        child_frame_id = "sensor"
-
-        # tf.TransformBroadcaster().sendTransform(translation, quaternion, timestamp, child_frame_id, frame_id)
-        
 
     def spin(self):
         pass
