@@ -21,8 +21,8 @@ pub_speed_topic_            : /cmd_vel
 
 kSensorType                 : "lidar"
 # 
-kVehicleLength    : 0.2 
-kVehicleWidth     : 0.2
+kVehicleLength    : 0.4 
+kVehicleWidth     : 0.4
 # # Depth camera params
 # kSensorOffsetX    : 0.136       # [met]
 # kSensorOffsetY    : -0.018      # [met]
@@ -55,12 +55,12 @@ kMinRelZ            : -0.4
 kMaxRelZ            : -0.02 
 # minRelZ : 0.3 
 # maxRelZ : 2.0
-kMaxSpeed           : 0.2
-kDirWeight          : 0.01 
+kMaxSpeed           : 0.3
+kDirWeight          : 0.03 
 kDirThre            : 30.0 
 kDirToVehicle       : false 
 
-kPathScale          : 0.5 
+kPathScale          : 1.0 
 kMinPathScale       : 0.15 
 kPathScaleStep      : 0.01 
 kPathScaleBySpeed   : true 
@@ -83,8 +83,8 @@ kSubSkipNum       : 1
 kLookAheadDis     : 2.0
 # yawRateGain     : 7.5
 # stopYawRateGain : 7.5
-kYawRateGain      : 1.0
-kStopYawRateGain  : 1.0
+kYawRateGain      : 3.0
+kStopYawRateGain  : 3.0
 # maxYawRate      : 90.0
 kMaxYawRate       : 90.0
 # maxAccel        : 2.5
