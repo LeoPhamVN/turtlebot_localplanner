@@ -1,10 +1,11 @@
 # Local Planner
 sub_odometry_topic_         : /state_estimation
-sub_registered_scan_topic_  : /sensor_registered_scan
+sub_registered_scan_topic_  : /turtlebot/kobuki/sensors/rplidar
 sub_terrain_map_topic_      : /terrain_map
 sub_terrain_map_ext_topic_  : /terrain_map_ext
 sub_joystick_topic_         : /joy
-sub_waypoint_topic_         : /way_point #/move_base_simple/goal #
+sub_waypoint_topic_         : /way_point
+sub_waypoint_rviz_topic_    : /move_base_simple/goal
 sub_speed_topic_            : /speed
 sub_stop_topic_             : /stop
 sub_navigation_boundary_topic_ : /navigation_boundary
@@ -20,8 +21,8 @@ pub_speed_topic_            : /cmd_vel
 
 kSensorType                 : "lidar"
 # 
-kVehicleLength    : 0.5 
-kVehicleWidth     : 0.5
+kVehicleLength    : 0.2 
+kVehicleWidth     : 0.2
 # # Depth camera params
 # kSensorOffsetX    : 0.136       # [met]
 # kSensorOffsetY    : -0.018      # [met]
@@ -34,14 +35,14 @@ kSensorOffsetZ    : -0.179        # [met]
 
 kTwoWayDrive      : true 
 # 
-kLaserVoxelSize   : 0.1 #0.05 
+kLaserVoxelSize   : 0.05 
 kTerrainVoxelSize : 0.1 
 
 kUseTerrainAnalysis : false 
 kCheckObstacle      : true 
 kCheckRotObstacle   : false 
 
-adjacentRange       : 3.5 
+kAdjacentRange      : 3.0 
 
 kObstacleHeightThre : 0.25 
 kGroundHeightThre   : 0.1 
@@ -55,16 +56,16 @@ kMaxRelZ            : -0.02
 # minRelZ : 0.3 
 # maxRelZ : 2.0
 kMaxSpeed           : 0.2
-kDirWeight          : 0.02 
-kDirThre            : 90.0 
+kDirWeight          : 0.01 
+kDirThre            : 30.0 
 kDirToVehicle       : false 
 
 kPathScale          : 0.5 
 kMinPathScale       : 0.15 
 kPathScaleStep      : 0.01 
 kPathScaleBySpeed   : true 
-kMinPathRange       : 1.0 
-kPathRangeStep      : 1.5 
+kMinPathRange       : 0.5 
+kPathRangeStep      : 1.0 
 
 kPathRangeBySpeed   : true 
 kPathCropByGoal     : true 
@@ -72,20 +73,20 @@ kPathCropByGoal     : true
 kAutonomyMode       : true
 kJoyToSpeedDelay    : 2.0
 kJoyToCheckObstacleDelay : 5.0 
-kAutonomySpeed      : 0.2   #2.0
+kAutonomySpeed      : 0.3   #2.0
 
-kGoalClearRange     : 0.5 
+kGoalClearRange     : 0.2 
 kGoalX              : 0.0 
 kGoalY              : 0.0 
 
 kSubSkipNum       : 1
-kLookAheadDis     : 1.5
+kLookAheadDis     : 2.0
 # yawRateGain     : 7.5
 # stopYawRateGain : 7.5
 kYawRateGain      : 1.0
 kStopYawRateGain  : 1.0
 # maxYawRate      : 90.0
-kMaxYawRate       : 180.0
+kMaxYawRate       : 90.0
 # maxAccel        : 2.5
 kMaxAccel         : 3.0
 # kSwitchTimeThre   : 1.0
@@ -105,3 +106,8 @@ kStopTime         : 5.0
 
 kNoRotAtStop      : false
 kNoRotAtGoal      : true
+
+
+kSensorDirX       : -1.0
+kSensorDirY       : -1.0
+kSensorDirZ       : 1.0
