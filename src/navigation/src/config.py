@@ -1,8 +1,7 @@
 # Params
-MODE              = "SIL"
 FRAME_MAP         = "map"
 FRAME_BASE        = "turtlebot/kobuki/base_footprint"
-FRAME_PREDICTED_BASE    = "turtlebot/kobuki/predicted_base_footprint"
+# FRAME_PREDICTED_BASE    = "turtlebot/kobuki/predicted_base_footprint"
 
 PUB_KEYFRAME_DEADRECKONING_TOPIC = "/keyframes_deadReckoning"
 PUB_ODOM_TOPIC          = "/state_estimation"
@@ -19,7 +18,7 @@ ROBOT_WHEEL_RADIUS      = 0.035
 STD_ODOM_X_VELOCITY     = 0.01          # [m/s]
 STD_ODOM_Y_VELOCITY     = 0.001         # [m/s]
 STD_ODOM_ROTATE_VELOCITY= 0.1           # [deg/s]
-STD_MAG_HEADING         = 1             # [deg]
+STD_MAG_HEADING         = 0.05             # [deg]
 
 
 #
