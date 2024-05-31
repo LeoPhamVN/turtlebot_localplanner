@@ -55,8 +55,8 @@ kMinRelZ            : -0.4
 kMaxRelZ            : -0.02 
 # minRelZ : 0.3 
 # maxRelZ : 2.0
-kMaxSpeed           : 0.3
-kDirWeight          : 0.03 
+kMaxSpeed           : 0.15
+kDirWeight          : 0.05 
 kDirThre            : 30.0 
 kDirToVehicle       : false 
 
@@ -73,7 +73,7 @@ kPathCropByGoal     : true
 kAutonomyMode       : true
 kJoyToSpeedDelay    : 2.0
 kJoyToCheckObstacleDelay : 5.0 
-kAutonomySpeed      : 0.3   #2.0
+kAutonomySpeed      : 0.15   #2.0
 
 kGoalClearRange     : 0.2 
 kGoalX              : 0.0 
@@ -83,16 +83,16 @@ kSubSkipNum       : 1
 kLookAheadDis     : 2.0
 # yawRateGain     : 7.5
 # stopYawRateGain : 7.5
-kYawRateGain      : 3.0
-kStopYawRateGain  : 3.0
+kYawRateGain      : 5.0
+kStopYawRateGain  : 5.0
 # maxYawRate      : 90.0
-kMaxYawRate       : 90.0
+kMaxYawRate       : 40.0
 # maxAccel        : 2.5
 kMaxAccel         : 3.0
 # kSwitchTimeThre   : 1.0
-kDirDiffThre      : 0.2
+kDirDiffThre      : 0.3
 kStopDisThre      : 0.1
-kSlowDwnDisThre   : 0.4
+kSlowDwnDisThre   : 0.5
 
 kUseInclRateToSlow: false
 kInclRateThre     : 120.0
@@ -108,6 +108,6 @@ kNoRotAtStop      : false
 kNoRotAtGoal      : true
 
 
-kSensorDirX       : -1.0
-kSensorDirY       : -1.0
+kSensorDirX       : 1.0
+kSensorDirY       : 1.0
 kSensorDirZ       : 1.0

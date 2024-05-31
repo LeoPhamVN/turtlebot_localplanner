@@ -16,7 +16,10 @@
 #include <geometry_msgs/PolygonStamped.h>
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <sensor_msgs/LaserScan.h>
 #include <sensor_msgs/Joy.h>
+
+#include <laser_geometry/laser_geometry.h>
 
 #include <tf/transform_datatypes.h>
 #include <tf/transform_broadcaster.h>
@@ -48,7 +51,7 @@ double kTerrainVoxelSize = 0.2;
 bool kUseTerrainAnalysis = false;
 bool kCheckObstacle = true;
 bool kCheckRotObstacle = false;
-double kAdjacentRange = 3.5;
+double kAdjacentRange = 2.0;
 double kObstacleHeightThre = 0.2;
 double kGroundHeightThre = 0.1;
 double kCostHeightThre = 0.1;
@@ -100,6 +103,7 @@ string sub_terrain_map_topic_;
 string sub_terrain_map_ext_topic_;
 string sub_joystick_topic_;
 string sub_waypoint_topic_;
+string sub_waypoint_rviz_topic_;
 string sub_speed_topic_;
 string sub_navigation_boundary_topic_;
 string sub_added_obstacles_topic_;
@@ -111,6 +115,10 @@ string pub_vertical_obstacles_topic_;
 string pub_goal_topic_;
 
 string kSensorType; 
+
+double kSensorDirX;
+double kSensorDirY;
+double kSensorDirZ;
 
 // typedef pcl::PointXYZRGBNormal PlannerCloudPointType;
 
@@ -156,6 +164,8 @@ float vehicleRoll = 0, vehiclePitch = 0, vehicleYaw = 0;
 float vehicleX = 0, vehicleY = 0, vehicleZ = 0;
 
 pcl::VoxelGrid<pcl::PointXYZI> laserDwzFilter, terrainDwzFilter;
+
+laser_geometry::LaserProjection projector;
 
 
 // Test
@@ -229,6 +239,75 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloud2)
         pointX = point.x;
         pointY = point.y;
         pointZ = point.z;
+      }
+      
+      float dis = sqrt(pointX * pointX + pointY * pointY);
+      if (dis < kAdjacentRange) {
+        point.x = pointX + kSensorOffsetX;
+        point.y = pointY + kSensorOffsetY;
+        point.z = pointZ + kSensorOffsetZ;
+        laserCloudCrop->push_back(point);
+      }
+    }
+
+    laserCloudDwz->clear();
+    laserDwzFilter.setInputCloud(laserCloudCrop);
+    laserDwzFilter.filter(*laserCloudDwz);
+    
+    newLaserCloud = true;
+  }
+}
+
+void laser2DCloudHandler(const sensor_msgs::LaserScanConstPtr& input)
+{
+  if (!kUseTerrainAnalysis) {
+    // pcl::PointCloud<pcl::PointXYZ>::Ptr laserCloud(new pcl::PointCloud<pcl::PointXYZ>());
+    // pcl::fromROSMsg(*laserCloud2, *laserCloud);
+
+    // pointcloud_downsizer_.Downsize(laserCloud, 0.2, 0.2, 0.2);
+    // registered_cloud_->cloud_->clear();
+    // pcl::copyPointCloud(*laserCloud, *(registered_cloud_->cloud_));
+    // vertical_surface_cloud_->cloud_->clear();
+
+    // vertical_surface_extractor.ExtractVerticalSurface<PlannerCloudPointType, PlannerCloudPointType>(
+    //       registered_cloud_->cloud_, vertical_surface_cloud_->cloud_);
+
+    // pcl::PointCloud<pcl::PointXYZ>::Ptr vertical_surface_cloud(new pcl::PointCloud<pcl::PointXYZ>());
+    // pcl::copyPointCloud(*(vertical_surface_cloud_->cloud_), *vertical_surface_cloud);
+
+    // Convert LaserScan to PointCloud2
+    sensor_msgs::PointCloud2 cloud;
+    projector.projectLaser(*input, cloud);
+
+    // Create a PCL point cloud from the PointCloud2 message
+    laserCloud->clear();
+    pcl::fromROSMsg(cloud, *laserCloud);
+
+    pcl::PointXYZI point;
+    laserCloudCrop->clear();
+    int laserCloudSize = laserCloud->points.size();
+    for (int i = 0; i < laserCloudSize; i++) {
+      point.x = laserCloud->points[i].x;
+      point.y = laserCloud->points[i].y;
+      point.z = laserCloud->points[i].z;
+
+      float pointX;
+      float pointY;
+      float pointZ;
+
+      // Convert orientation from camera frame to vehicle frame
+      if (kSensorType == "depthCamera")
+      {
+        pointX = point.z;
+        pointY = point.x;
+        pointZ = point.y;
+
+      }
+      else if (kSensorType == "lidar")
+      {
+        pointX = kSensorDirX*point.x;
+        pointY = kSensorDirY*point.y;
+        pointZ = kSensorDirZ*point.z;
       }
       
       float dis = sqrt(pointX * pointX + pointY * pointY);
@@ -398,6 +477,19 @@ void goalHandler(const geometry_msgs::PointStamped::ConstPtr& goal)
   // goalCloud->push_back(point);
 }
 
+void goalRvizHandler(const geometry_msgs::PoseStamped::ConstPtr& goal)
+{
+  kGoalX = goal->pose.position.x;
+  kGoalY = goal->pose.position.y;
+
+  goalCloud->clear();
+  pcl::PointXYZI point;
+  point.x = kGoalX;
+  point.y = kGoalY;
+  point.z = 0.0;
+  goalCloud->push_back(point);
+}
+
 void speedHandler(const std_msgs::Float32::ConstPtr& speed)
 {
   double speedTime = ros::Time::now().toSec();
@@ -409,6 +501,7 @@ void speedHandler(const std_msgs::Float32::ConstPtr& speed)
     else if (joySpeed > 1.0) joySpeed = 1.0;
   }
 }
+
 
 void boundaryHandler(const geometry_msgs::PolygonStamped::ConstPtr& boundary)
 {
@@ -701,6 +794,7 @@ int main(int argc, char** argv)
   nhPrivate.getParam("sub_terrain_map_ext_topic_", sub_terrain_map_ext_topic_);
   nhPrivate.getParam("sub_joystick_topic_", sub_joystick_topic_);
   nhPrivate.getParam("sub_waypoint_topic_", sub_waypoint_topic_);
+  nhPrivate.getParam("sub_waypoint_rviz_topic_", sub_waypoint_rviz_topic_);
   nhPrivate.getParam("sub_speed_topic_", sub_speed_topic_);
   nhPrivate.getParam("sub_navigation_boundary_topic_", sub_navigation_boundary_topic_);
   nhPrivate.getParam("sub_added_obstacles_topic_", sub_added_obstacles_topic_);
@@ -712,6 +806,10 @@ int main(int argc, char** argv)
   nhPrivate.getParam("pub_goal_topic_", pub_goal_topic_);
 
   nhPrivate.getParam("kSensorType", kSensorType);
+
+  nhPrivate.getParam("kSensorDirX", kSensorDirX);
+  nhPrivate.getParam("kSensorDirY", kSensorDirY);
+  nhPrivate.getParam("kSensorDirZ", kSensorDirZ);
 
   // Test
   // ROS message filters
@@ -733,8 +831,11 @@ int main(int argc, char** argv)
   ros::Subscriber subOdometry = nh.subscribe<nav_msgs::Odometry>
                                 (sub_odometry_topic_, 5, odometryHandler);
 
-  ros::Subscriber subLaserCloud = nh.subscribe<sensor_msgs::PointCloud2>
-                                  (sub_registered_scan_topic_, 5, laserCloudHandler);
+  // ros::Subscriber subLaserCloud = nh.subscribe<sensor_msgs::PointCloud2>
+  //                                 (sub_registered_scan_topic_, 5, laserCloudHandler);
+
+  ros::Subscriber subLaserCloud = nh.subscribe<sensor_msgs::LaserScan>
+                                  (sub_registered_scan_topic_, 5, laser2DCloudHandler);
 
   ros::Subscriber subTerrainCloud = nh.subscribe<sensor_msgs::PointCloud2>
                                     (sub_terrain_map_topic_, 5, terrainCloudHandler);
@@ -743,7 +844,7 @@ int main(int argc, char** argv)
 
   ros::Subscriber subGoal = nh.subscribe<geometry_msgs::PointStamped> (sub_waypoint_topic_, 5, goalHandler);
 
-  // ros::Subscriber subGoal = nh.subscribe<geometry_msgs::PoseStamped> (sub_waypoint_topic_, 5, goalHandler);
+  ros::Subscriber subRvizGoal = nh.subscribe<geometry_msgs::PoseStamped> (sub_waypoint_rviz_topic_, 5, goalRvizHandler);
 
   ros::Subscriber subSpeed = nh.subscribe<std_msgs::Float32> (sub_speed_topic_, 5, speedHandler);
 
