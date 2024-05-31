@@ -1,9 +1,9 @@
 # Sensor scan generation for HIL
-sub_odometry_topic_                 : /odom #/state_estimation
+sub_odometry_topic_                 : /state_estimation
 sub_sensor_registered_scan_topic_   : /sensor_registered_scan
 
 pub_state_estimation_at_scan_topic_ : /state_estimation_at_scan
-pub_registered_scan_topic_          : /registered_scan
+pub_registered_scan_topic_          : /registered_scan_ban
 
 frame_map_            : map
 frame_base_footprint_ : turtlebot/kobuki/base_footprint
@@ -23,5 +23,9 @@ frame_depth_camera_ : turtlebot/kobuki/rplidar
 kSensorOffsetX    : -0.006       # [met]
 kSensorOffsetY    :  0.000      # [met]
 kSensorOffsetZ    : -0.179      # [met]
+
+kSensorDirX       : -1.0
+kSensorDirY       : -1.0
+kSensorDirZ       : 1.0
 
 kSensorType       : "lidar"

@@ -68,6 +68,10 @@ double kSensorOffsetX;      // [met]
 double kSensorOffsetY;      // [met]
 double kSensorOffsetZ;      // [met]
 
+double kSensorDirX;
+double kSensorDirY;
+double kSensorDirZ;
+
 string kSensorType; 
 
 void OdometryHandler(const nav_msgs::Odometry::ConstPtr& odometry)
@@ -135,9 +139,9 @@ void laserCloudAndOdometryHandler(const nav_msgs::Odometry::ConstPtr& odometry,
     else if (kSensorType == "lidar")
     {
       // Use for Lidar
-      vec.setX(p1.x + kSensorOffsetX);
-      vec.setY(p1.y + kSensorOffsetY);
-      vec.setZ(p1.z + kSensorOffsetZ);
+      vec.setX(kSensorDirX*p1.x + kSensorOffsetX);
+      vec.setY(kSensorDirY*p1.y + kSensorOffsetY);
+      vec.setZ(kSensorDirZ*p1.z + kSensorOffsetZ);
     }
     
     vec = transformToMap * vec;
@@ -192,6 +196,10 @@ int main(int argc, char** argv)
   nhPrivate.getParam("kSensorOffsetX", kSensorOffsetX);
   nhPrivate.getParam("kSensorOffsetY", kSensorOffsetY);
   nhPrivate.getParam("kSensorOffsetZ", kSensorOffsetZ);
+
+  nhPrivate.getParam("kSensorDirX", kSensorDirX);
+  nhPrivate.getParam("kSensorDirY", kSensorDirY);
+  nhPrivate.getParam("kSensorDirZ", kSensorDirZ);
 
   nhPrivate.getParam("kSensorType", kSensorType);
 

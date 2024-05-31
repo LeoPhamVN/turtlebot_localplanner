@@ -24,4 +24,8 @@ kSensorOffsetX    : -0.006       # [met]
 kSensorOffsetY    :  0.000      # [met]
 kSensorOffsetZ    : -0.179      # [met]
 
+kSensorDirX       : 1.0
+kSensorDirY       : 1.0
+kSensorDirZ       : 1.0
+
 kSensorType       : "lidar"
