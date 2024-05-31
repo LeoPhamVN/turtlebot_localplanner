@@ -10,7 +10,7 @@ class Encoder:
         self.stamp      = None      # Time stamp        [ros time]
 
 class OdomData:
-    def __init__(self, Qk):
+    def __init__(self, MODE, Qk):
         """
         Constructor of the OdomData class.
 

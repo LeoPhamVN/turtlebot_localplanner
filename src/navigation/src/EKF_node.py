@@ -17,6 +17,10 @@ from utils.Magnetometer import *
 
 class EKF:
     def __init__(self) -> None:
+
+        # Read the 'input_param' parameter
+        MODE = rospy.get_param("mode", "SIL")
+        
         # Init using sensors
         Qk          = np.diag(np.array([STD_ODOM_X_VELOCITY ** 2, STD_ODOM_Y_VELOCITY ** 2, np.deg2rad(STD_ODOM_ROTATE_VELOCITY) ** 2])) 
         Rk          = np.diag([np.deg2rad(STD_MAG_HEADING)**2])
@@ -45,7 +49,7 @@ class EKF:
         elif self.mode == "HIL":
             self.IMU_sub            = rospy.Subscriber(SUB_IMU_TOPIC, Imu, self.get_IMU) 
 
-        self.odom   = OdomData(Qk)
+        self.odom   = OdomData(MODE, Qk)
         self.mag    = Magnetometer(Rk)
 
         # self.path   = Path()
@@ -122,7 +126,7 @@ class EKF:
             # Publish rviz
             self.odom_path_pub(timestamp)             # Use for Localizarion only
 
-            self.publish_tf_map(timestamp)
+            # self.publish_tf_map(timestamp)
 
             if self.mode == "HIL":
                 self.publish_tf_cam(timestamp)
@@ -146,7 +150,7 @@ class EKF:
         odom = Odometry()
         odom.header.stamp = timestamp
         odom.header.frame_id = FRAME_MAP
-        odom.child_frame_id = FRAME_PREDICTED_BASE
+        odom.child_frame_id = FRAME_BASE
 
 
         odom.pose.pose.position.x = self.xk[0]
