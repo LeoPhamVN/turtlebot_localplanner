@@ -1,7 +1,7 @@
 
 
-kSensorRange                : 6.0         # [met]
-kSensorVerticalAngle        : 20.0        # [deg]
+kSensorRange                : 4.0         # [met]
+kSensorVerticalAngle        : 60.0        # [deg]
 kSensorHeight               : 0.2         # [met]
 kExtendStep                 : 0.02        # [met]
 kFloorExtendStep            : 0.05        # [met]
