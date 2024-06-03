@@ -76,10 +76,11 @@ class EKF_3DOF_InputDisplacement_Heading(GFLocalization, EKF, OdomData):
         """
         if self.headingData == True: 
             # Read compass sensor
-            zk, Rk  = self.magData.get_magnetometer()
+            zk, Rk, headingStamp  = self.magData.get_magnetometer()
         else:
             zk = np.zeros((0,0))
             Rk = np.zeros((0,0))
+            headingStamp = rospy.Time.now()
 
         # Raise flag got measurement
         if len(zk) != 0:
@@ -95,4 +96,4 @@ class EKF_3DOF_InputDisplacement_Heading(GFLocalization, EKF, OdomData):
             Hk      = np.zeros((0,ns))
             # Compute V matrix
             Vk      = np.zeros((0,0))
-        return zk, Rk, Hk, Vk
+        return zk, Rk, Hk, Vk, headingStamp

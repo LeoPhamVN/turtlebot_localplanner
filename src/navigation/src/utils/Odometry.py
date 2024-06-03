@@ -48,10 +48,12 @@ class OdomData:
         elif self.mode == "HIL":
             # Get encoder data for the left wheel
             self.leftEncoder.velocity   = odom.velocity[0]
-            self.leftEncoder.stamp      = rospy.Time.now() 
+            self.leftEncoder.stamp      = odom.header.stamp
+            # self.leftEncoder.stamp      = rospy.Time.now() 
             # Get encoder data for the right wheel
             self.rightEncoder.velocity  = odom.velocity[1]
-            self.rightEncoder.stamp     = rospy.Time.now() 
+            self.rightEncoder.stamp      = odom.header.stamp
+            # self.rightEncoder.stamp     = rospy.Time.now() 
         return True
 
     def synchronize_encoder_reading(self):

@@ -90,7 +90,7 @@ class EKF(GaussianFilter):
 
         return xk_bar, Pk_bar
 
-    def Update(self, zk, Rk, xk_bar, Pk_bar, Hk, Vk):
+    def Update(self, zk, Rk, xk_bar, Pk_bar, Hk, Vk, headingStamp):
         """
         Update step of the EKF. It calls the observation model and its Jacobians to update the state vector and its covariance matrix.
 
@@ -108,7 +108,9 @@ class EKF(GaussianFilter):
             Kk          = Pk_bar @ Hk.T @ np.linalg.inv(Hk @ Pk_bar @ Hk.T + Vk @ Rk @ Vk.T)
 
             # Compute updated state and covariance
-            xk          = xk_bar + Kk @ normalize_angle(zk - self.h(xk_bar))
+            closest_index = self.find_closest_timestamp(headingStamp)
+            xk_closest      = self.xk_hist[closest_index] 
+            xk          = xk_bar + Kk @ normalize_angle(zk - self.h(xk_closest))
             I           = np.diag(np.ones(len(xk_bar)))
             Pk          = (I - Kk @ Hk) @ Pk_bar @ (I - Kk @ Hk).T
 
@@ -124,3 +126,20 @@ class EKF(GaussianFilter):
 
     def gotNewHeadingData(self):
         self.headingData = True
+
+    # Function to find the closest timestamp in the deque to the new timestamp
+    def find_closest_timestamp(self, meaStamp):
+        min_difference = rospy.Duration.from_sec(1e6)
+        idx = 0
+        closest_index = -1
+        
+        for ts in self.time_hist:
+            difference = abs(ts - meaStamp)
+            if difference < min_difference:
+                min_difference = difference
+                closest_index = idx
+            idx += 1
+        # min_difference = abs(self.time_hist[-1] - meaStamp)
+        # print(min_difference.to_sec())
+        # print(closest_index)
+        return closest_index

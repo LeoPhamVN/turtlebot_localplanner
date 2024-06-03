@@ -56,7 +56,7 @@ class GFLocalization(GaussianFilter):
         """
         pass
 
-    def Localize(self, xk_1, Pk_1):
+    def Localize(self, xk_1, Pk_1, odomStamp):
         """
         Localization iteration. Reads the input of the motion model, performs the prediction step, reads the measurements, performs the update step and logs the results.
         The method also plots the uncertainty ellipse of the robot pose.
@@ -72,12 +72,15 @@ class GFLocalization(GaussianFilter):
         xk_bar, Pk_bar  = self.Prediction(uk, Qk, xk_1, Pk_1)
 
         # Get measurement, Heading of the robot
-        zk, Rk, Hk, Vk  = self.GetMeasurements()
+        zk, Rk, Hk, Vk, headingStamp  = self.GetMeasurements()
         # Update step
-        xk, Pk          = self.Update(zk, Rk, xk_bar, Pk_bar, Hk, Vk)
+        xk, Pk          = self.Update(zk, Rk, xk_bar, Pk_bar, Hk, Vk, headingStamp)
 
         # Normalise heading angle
         xk[2]           = normalize_angle(xk[2])
+
+        self.xk_hist.append(xk)
+        self.time_hist.append(odomStamp)
         return xk, Pk
         # return xk, Pk, xk_bar, zk, Rk
 

@@ -1,3 +1,5 @@
+from collections import deque
+import rospy
 class GaussianFilter:
     """
     Gaussian Filter Interface
@@ -21,12 +23,17 @@ class GaussianFilter:
         self.Pk_1   = P0  # initialize covariance matrix
         self.xk     = x0  # initialize state vector
         self.Pk     = P0  # initialize covariance matrix
+        self.xk_hist    = deque(maxlen=20)
+        self.xk_hist.append(x0)
+        self.time_hist  = deque(maxlen=20)
+        self.time_hist.append(rospy.Time.now())
 
     def Reset(self, x0, P0):
         self.xk_1   = x0  # initialize state vector
         self.Pk_1   = P0  # initialize covariance matrix
         self.xk     = x0  # initialize state vector
         self.Pk     = P0  # initialize covariance matrix
+        
 
     def Prediction(self, uk, Qk, xk_1=None, Pk_1=None):
         """
