@@ -6,6 +6,7 @@
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <message_filters/subscriber.h>
+#include <nav_msgs/Odometry.h>
 
 using namespace std;
 
@@ -13,19 +14,23 @@ using namespace std;
 laser_geometry::LaserProjection projector;
 ros::Publisher pubLaserCloud;
 
+nav_msgs::Odometry odometryIn;
+
 float kSensorRange;
 float kSensorVerticalAngle;
 float kSensorHeight;
+float kGridRange;
 float kHeightExtendStep;
 float kFloorExtendStep;
 
 string laser_scan_topic_;
+string odom_topic_;
 string pub_sensor_registered_scan_topic_;
 
 class Grid {
 public:
     // Constructor
-    Grid(float resolution, float halfLengthX, float halfLengthY)
+    Grid(float resolution, float halfLengthX, float halfLengthY, float x0, float y0)
         : resolution(resolution), halfLengthX(halfLengthX), halfLengthY(halfLengthY) {
         if (resolution <= 0 || halfLengthX <= 0 || halfLengthY <= 0) {
             throw std::invalid_argument("Resolution and half lengths must be positive.");
@@ -35,8 +40,11 @@ public:
         sizeX =  static_cast<int>((2 * halfLengthX) * resolution_inv);
         sizeY =  static_cast<int>((2 * halfLengthY) * resolution_inv);
 
-        originX_sub = static_cast<int>((halfLengthX) * resolution_inv - 1);
-        originY_sub = static_cast<int>((halfLengthY) * resolution_inv - 1);
+        // originX_sub = static_cast<int>((halfLengthX) * resolution_inv - 1);
+        // originY_sub = static_cast<int>((halfLengthY) * resolution_inv - 1);
+
+        originX_sub = static_cast<int>((x0+halfLengthX) * resolution_inv - 1);
+        originY_sub = static_cast<int>((y0+halfLengthY) * resolution_inv - 1);
         // Initialize grid with 0s
         grid.resize(sizeX, std::vector<int>(sizeY, 0));
         gridOut.resize(sizeX, std::vector<int>(sizeY, 0));
@@ -203,56 +211,6 @@ private:
     std::vector<std::vector<int>> gridOut; // 2D vector to store grid values
 };
 
-int getSign(int num) {
-    if (num > 0) {
-        return 1; // Positive
-    } else if (num < 0) {
-        return -1; // Negative
-    } else {
-        return 0; // Zero
-    }
-}
-
-struct Point {
-    float x;
-    float y;
-};
-
-std::vector<Point> getPointsBetween(const Point& p1, const Point& p2) {
-    std::vector<Point> pointList;
-
-    float dx = abs(p2.x - p1.x);
-    float dy = abs(p2.y - p1.y);
-    if (dx == 0 && dy == 0)
-        return pointList;
-    float sx = p1.x < p2.x ? kFloorExtendStep : -kFloorExtendStep;
-    float sy = p1.y < p2.y ? kFloorExtendStep : -kFloorExtendStep;
-    float err = dx - dy;
-
-    float x = p1.x;
-    float y = p1.y;
-
-    while (true) {
-        pointList.push_back({x, y});
-
-        if (abs(x) >= abs(p2.x) || abs(y) >= abs(p2.y)) {
-            break;
-        }
-
-        int e2 = 2 * err;
-        if (e2 > -dy) {
-            err -= dy;
-            x += sx;
-        }
-        if (e2 < dx) {
-            err += dx;
-            y += sy;
-        }
-    }
-
-    return pointList;
-}
-
 void laserScanCallback(const sensor_msgs::LaserScanConstPtr& input)
 {
     // Convert LaserScan to PointCloud2
@@ -266,12 +224,7 @@ void laserScanCallback(const sensor_msgs::LaserScanConstPtr& input)
     // Create a new PCL point cloud to store the extended 3D points
     pcl::PointCloud<pcl::PointXYZ> extended_cloud;
 
-    Grid laserScan(kFloorExtendStep, kSensorRange, kSensorRange);
-
-    int rows = 2 * kSensorRange / kFloorExtendStep + 1;
-    int cols = 2 * kSensorRange / kFloorExtendStep + 1;
-    int arr[rows][cols] = {};
-    Point p1 = {0, 0};
+    Grid laserScan(kFloorExtendStep, kSensorRange, kSensorRange, 0, 0);
 
     // Iterate through the original point cloud
     for (const auto& point : pcl_cloud.points)
@@ -293,25 +246,6 @@ void laserScanCallback(const sensor_msgs::LaserScanConstPtr& input)
             if (abs(tilt_angle) < kSensorVerticalAngle)
                 extended_cloud.points.push_back(extended_point);
         }
-
-        // Point p2 = {point.x, point.y};
-        // std::vector<Point> pointLists = getPointsBetween(p1, p2);
-
-        // for (const Point& p : pointLists) 
-        // {
-        //     int num_x = int(p.x / kFloorExtendStep + rows/2);
-        //     int num_y = int(p.y / kFloorExtendStep + cols/2);
-        //     if (arr[num_x][num_y] != 1)
-        //     {
-        //         pcl::PointXYZ floor_point;
-        //         floor_point.x = p.x;
-        //         floor_point.y = p.y;
-        //         floor_point.z = kSensorHeight;
-        //         extended_cloud.points.push_back(floor_point);
-        //         arr[num_x][num_y] = 1;
-        //     }
-        // }
-
     }
 
     laserScan.fillGrid();
@@ -333,7 +267,12 @@ void laserScanCallback(const sensor_msgs::LaserScanConstPtr& input)
     pubLaserCloud.publish(output);
 }
 
-void laserScanCallback_slam(const sensor_msgs::PointCloud2& input)
+void OdometryHandler(const nav_msgs::Odometry::ConstPtr& odometry)
+{
+  odometryIn = *odometry;
+}
+
+void laserScanMapFrameCallback(const sensor_msgs::PointCloud2& input)
 {
     // Create a PCL point cloud from the PointCloud2 message
     pcl::PointCloud<pcl::PointXYZ> pcl_cloud;
@@ -342,17 +281,16 @@ void laserScanCallback_slam(const sensor_msgs::PointCloud2& input)
     // Create a new PCL point cloud to store the extended 3D points
     pcl::PointCloud<pcl::PointXYZ> extended_cloud;
 
-    int rows = 2 * kSensorRange / kFloorExtendStep + 1;
-    int cols = 2 * kSensorRange / kFloorExtendStep + 1;
-    int arr[rows][cols] = {};
-    Point p1 = {0, 0};
+    Grid laserScan(kFloorExtendStep, kGridRange, kGridRange, odometryIn.pose.pose.position.x, odometryIn.pose.pose.position.y);
 
     // Iterate through the original point cloud
     for (const auto& point : pcl_cloud.points)
     {   
-        float distance = sqrt(point.x * point.x + point.y * point.y);
+        float distance = sqrt((point.x-odometryIn.pose.pose.position.x)*(point.x-odometryIn.pose.pose.position.x) + (point.y-odometryIn.pose.pose.position.y)*(point.y-odometryIn.pose.pose.position.y));
         if (distance > kSensorRange || distance < 0.2)
             continue;
+
+        laserScan.setCellOccupancy(point.x, point.y);
 
         // Create additional points at different z-values
         for (float z = kSensorHeight; z >= -0.4; z -= kHeightExtendStep)
@@ -365,31 +303,21 @@ void laserScanCallback_slam(const sensor_msgs::PointCloud2& input)
             if (abs(tilt_angle) < kSensorVerticalAngle)
                 extended_cloud.points.push_back(extended_point);
         }
-
-        Point p2 = {point.x, point.y};
-        std::vector<Point> pointLists = getPointsBetween(p1, p2);
-
-        for (const Point& p : pointLists) 
-        {
-            int num_x = int(p.x / kFloorExtendStep + rows/2);
-            int num_y = int(p.y / kFloorExtendStep + cols/2);
-            if (arr[num_x][num_y] != 1)
-            {
-                pcl::PointXYZ floor_point;
-                floor_point.x = p.x;
-                floor_point.y = p.y;
-                floor_point.z = kSensorHeight;
-                extended_cloud.points.push_back(floor_point);
-                arr[num_x][num_y] = 1;
+    }
+    laserScan.fillGrid();
+    for (int x = 0; x < laserScan.getSizeX(); ++x) {
+        for (int y = 0; y < laserScan.getSizeY(); ++y) {
+            if (laserScan.getCellValueSub(x, y) == 1 || laserScan.getCellValueSubOut(x, y) == 1 ) {
+                auto [meterX, meterY] = laserScan.sub2Pos(x, y);
+                extended_cloud.points.push_back(pcl::PointXYZ(meterX, meterY, kSensorHeight));
             }
         }
-
     }
 
     // Convert the extended PCL point cloud back to a ROS message
     sensor_msgs::PointCloud2 output;
     pcl::toROSMsg(extended_cloud, output);
-    // output.header = cloud.header;
+    output.header = input.header;
 
     // Publish the extended point cloud
     pubLaserCloud.publish(output);
@@ -402,18 +330,29 @@ int main(int argc, char** argv)
     ros::NodeHandle nhPrivate = ros::NodeHandle("~");
 
     nhPrivate.getParam("laser_scan_topic_", laser_scan_topic_);
+    nhPrivate.getParam("odom_topic_", odom_topic_);
     nhPrivate.getParam("pub_sensor_registered_scan_topic_", pub_sensor_registered_scan_topic_);
     nhPrivate.getParam("kSensorRange", kSensorRange);
     nhPrivate.getParam("kSensorVerticalAngle", kSensorVerticalAngle);
     nhPrivate.getParam("kSensorHeight", kSensorHeight);
     nhPrivate.getParam("kExtendStep", kHeightExtendStep);
+    nhPrivate.getParam("kGridRange", kGridRange);
     nhPrivate.getParam("kFloorExtendStep", kFloorExtendStep);   
 
     kSensorVerticalAngle *= M_PI/180.0;
+
+    odometryIn.pose.pose.position.x = 0.0;
+    odometryIn.pose.pose.position.y = 0.0;
+
     // SUBCRIBE
     message_filters::Subscriber<sensor_msgs::LaserScan> subLaser;
+    // message_filters::Subscriber<sensor_msgs::PointCloud2> subLaser;
+    // message_filters::Subscriber<nav_msgs::Odometry> subOdom;
     subLaser.subscribe(nh, laser_scan_topic_, 1);
+    // subOdom.subscribe(nh, odom_topic_, 1);
     subLaser.registerCallback(boost::bind(laserScanCallback, _1));
+    // subLaser.registerCallback(laserScanMapFrameCallback);
+    // subOdom.registerCallback(OdometryHandler);
 
     // Initialize publisher
     pubLaserCloud = nh.advertise<sensor_msgs::PointCloud2>(pub_sensor_registered_scan_topic_, 1);

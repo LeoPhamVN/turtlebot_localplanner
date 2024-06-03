@@ -1,9 +1,10 @@
 
-
 kSensorRange                : 4.0         # [met]
 kSensorVerticalAngle        : 60.0        # [deg]
 kSensorHeight               : 0.2         # [met]
 kExtendStep                 : 0.02        # [met]
+kGridRange                  : 4.0        # [met]
 kFloorExtendStep            : 0.05        # [met]
-laser_scan_topic_           : /turtlebot/kobuki/sensors/rplidar
+laser_scan_topic_           : /turtlebot/kobuki/sensors/rplidar   #/pc  #
 pub_sensor_registered_scan_topic_   : /sensor_registered_scan
+odom_topic_                 : /state_estimation
