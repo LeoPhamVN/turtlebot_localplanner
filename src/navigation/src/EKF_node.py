@@ -10,6 +10,8 @@ from nav_msgs.msg import Odometry
 from utils.EKF_3DOF_InputDisplacement_Heading import *
 from utils.Odometry import *
 from utils.Magnetometer import *
+import time
+
 # from geometry_msgs.msg import PoseStamped
 
 # from turtlebot_graph_slam.srv import ResetFilter, ResetFilterResponse
@@ -75,11 +77,11 @@ class EKF:
                                                             odom.pose.pose.orientation.y,
                                                             odom.pose.pose.orientation.z,
                                                             odom.pose.pose.orientation.w])
-        
+        timeStamp = odom.header.stamp
         self.current_pose = np.array([odom.pose.pose.position.x, odom.pose.pose.position.y, yaw])
-
+        # time.sleep(0.005)
         # Get heading as a measurement to update filter
-        if self.mag.read_magnetometer(yaw-self.yawOffset) and self.ekf_filter is not None:
+        if self.mag.read_magnetometer(yaw-self.yawOffset, timeStamp) and self.ekf_filter is not None:
             self.ekf_filter.gotNewHeadingData()
     
     # IMU callback: Gets current robot orientation and stores it into self.current_pose. Besides, get heading as a measurement to update filter
@@ -90,11 +92,11 @@ class EKF:
                                                             Imu.orientation.w])
         
         yaw = -yaw      # Imu in the turtlebot is NEU while I'm using NED
-
+        timeStamp = Imu.header.stamp
         self.current_pose = np.array([0.0, 0.0, yaw])
-
+        
         # Get heading as a measurement to update filter
-        if self.mag.read_magnetometer(yaw-self.yawOffset) and self.ekf_filter is not None:
+        if self.mag.read_magnetometer(yaw-self.yawOffset, timeStamp) and self.ekf_filter is not None:
             self.ekf_filter.gotNewHeadingData()
 
     # Odometry callback: Gets encoder reading to compute displacement of the robot as input of the EKF Filter.
@@ -110,7 +112,7 @@ class EKF:
 
         if self.ekf_filter is not None:
             # Run EKF Filter
-            self.xk, self.Pk = self.ekf_filter.Localize(self.xk, self.Pk)
+            self.xk, self.Pk = self.ekf_filter.Localize(self.xk, self.Pk, timestamp)
 
             self.x_map       = Pose3D.oplus(self.x_frame_k, self.xk)
 

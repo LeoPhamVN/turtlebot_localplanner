@@ -15,10 +15,10 @@ SERVICE_RESET_FILTER    = "ResetFilter"
 ROBOT_WHEEL_BASE        = 0.235
 ROBOT_WHEEL_RADIUS      = 0.035
 
-STD_ODOM_X_VELOCITY     = 0.01          # [m/s]
-STD_ODOM_Y_VELOCITY     = 0.001         # [m/s]
-STD_ODOM_ROTATE_VELOCITY= 0.1           # [deg/s]
-STD_MAG_HEADING         = 0.05             # [deg]
+STD_ODOM_X_VELOCITY     = 0.05          # [m/s]
+STD_ODOM_Y_VELOCITY     = 0.005         # [m/s]
+STD_ODOM_ROTATE_VELOCITY= 0.5           # [deg/s]
+STD_MAG_HEADING         = 0.05          # [deg]
 
 
 #
