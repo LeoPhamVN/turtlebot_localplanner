@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   sensor_msgs
   pcl_ros
+  laser_geometry
 )
 
 find_package(PCL REQUIRED)
@@ -26,6 +27,7 @@ catkin_package(
   std_msgs
   sensor_msgs
   pcl_ros
+  laser_geometry
 )
 
 ###########
