@@ -120,6 +120,8 @@ double kSensorDirX;
 double kSensorDirY;
 double kSensorDirZ;
 
+string kMode;
+
 // typedef pcl::PointXYZRGBNormal PlannerCloudPointType;
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr laserCloud(new pcl::PointCloud<pcl::PointXYZ>());
@@ -807,10 +809,22 @@ int main(int argc, char** argv)
 
   nhPrivate.getParam("kSensorType", kSensorType);
 
-  nhPrivate.getParam("kSensorDirX", kSensorDirX);
-  nhPrivate.getParam("kSensorDirY", kSensorDirY);
-  nhPrivate.getParam("kSensorDirZ", kSensorDirZ);
+  nhPrivate.getParam("Mode", kMode);
 
+  if (kMode == "SIL")
+  {
+    nhPrivate.getParam("kSensorDirXSIL", kSensorDirX);
+    nhPrivate.getParam("kSensorDirYSIL", kSensorDirY);
+    nhPrivate.getParam("kSensorDirZSIL", kSensorDirZ);
+  }
+  else if (kMode == "HIL")
+  {
+    nhPrivate.getParam("kSensorDirXHIL", kSensorDirX);
+    nhPrivate.getParam("kSensorDirYHIL", kSensorDirY);
+    nhPrivate.getParam("kSensorDirZHIL", kSensorDirZ);
+  }
+  
+  
   // Test
   // ROS message filters
   // message_filters::Subscriber<nav_msgs::Odometry> subOdometrySync;

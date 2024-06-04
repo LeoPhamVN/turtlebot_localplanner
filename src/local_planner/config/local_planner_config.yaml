@@ -33,7 +33,7 @@ kSensorOffsetX    : -0.006        # [met]
 kSensorOffsetY    :  0.000        # [met]
 kSensorOffsetZ    : -0.179        # [met]
 
-kTwoWayDrive      : true 
+kTwoWayDrive      : false 
 # 
 kLaserVoxelSize   : 0.05 
 kTerrainVoxelSize : 0.1 
@@ -83,8 +83,8 @@ kSubSkipNum       : 1
 kLookAheadDis     : 2.0
 # yawRateGain     : 7.5
 # stopYawRateGain : 7.5
-kYawRateGain      : 5.0
-kStopYawRateGain  : 5.0
+kYawRateGain      : 3.0     #5.0 - HIL
+kStopYawRateGain  : 3.0     #5.0 - HIL
 # maxYawRate      : 90.0
 kMaxYawRate       : 40.0
 # maxAccel        : 2.5
@@ -92,7 +92,7 @@ kMaxAccel         : 3.0
 # kSwitchTimeThre   : 1.0
 kDirDiffThre      : 0.3
 kStopDisThre      : 0.1
-kSlowDwnDisThre   : 0.5
+kSlowDwnDisThre   : 0.25
 
 kUseInclRateToSlow: false
 kInclRateThre     : 120.0
@@ -107,7 +107,10 @@ kStopTime         : 5.0
 kNoRotAtStop      : false
 kNoRotAtGoal      : true
 
+kSensorDirXSIL    : 1.0
+kSensorDirYSIL    : 1.0
+kSensorDirZSIL    : 1.0
 
-kSensorDirX       : 1.0
-kSensorDirY       : 1.0
-kSensorDirZ       : 1.0
+kSensorDirXHIL    : -1.0
+kSensorDirYHIL    : -1.0
+kSensorDirZHIL    : 1.0

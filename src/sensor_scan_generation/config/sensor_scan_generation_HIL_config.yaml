@@ -3,7 +3,7 @@ sub_odometry_topic_                 : /state_estimation
 sub_sensor_registered_scan_topic_   : /sensor_registered_scan
 
 pub_state_estimation_at_scan_topic_ : /state_estimation_at_scan
-pub_registered_scan_topic_          : /registered_scan_ban
+pub_registered_scan_topic_          : /registered_scan
 
 frame_map_            : map
 frame_base_footprint_ : turtlebot/kobuki/base_footprint
