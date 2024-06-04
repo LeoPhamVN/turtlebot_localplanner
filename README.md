@@ -140,22 +140,7 @@ For each package, there is a launch file for those. But we can run whole project
 - `env_HIL.launch`: Launches the turtlebot_graph_slam package in the real turtlebot robot.
 
 ## Results
-1. Moving point to point:
-<div align="center">
-<img src="result_plots/ICP_before_after.png" alt="Factor Graph" width="300"/>
-</div>
 
-2. Simulation Testing:
-
-<div align="center">
-<img src="result_plots/test_stonefish.png" alt="Factor Graph" width="300"/><img src="result_plots/world_map_simulation.png" alt="Factor Graph" height = "330"/>
-</div>
-
-3. Real World Testing:
-
-<div align="center">
-<img src="result_plots/Untitled%20design.jpg" alt="Factor Graph" width="300"/><img src="result_plots/test_real_rviz_2.png" alt="Factor Graph" width="300"/>
-</div>
 
 <!-- The testing video can be found on [Youtube](https://youtu.be/LJ4F1GPrkgc?si=MMji7D_SDVsXrU04) -->
 

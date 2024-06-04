@@ -18,7 +18,7 @@ class VelocityConverter:
         self.d = 0.235   # Distance between wheels (example value, adjust according to your robot)
         self.r = 0.035   # Radius of wheels (example value, adjust according to your robot)
 
-        self.enable = None
+        self.enable = True
 
     def cmd_callback(self, msg):
         if msg.ids == "1" or msg.ids == "2":
