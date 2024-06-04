@@ -1,6 +1,9 @@
 <launch>
+  <arg name="mode" default="SIL" />
+
   <node pkg="local_planner" type="localPlanner" name="localPlanner" output="screen" required="true">
     <param name="kPathFolder" type="string" value="$(find local_planner)/paths" />
+    <param name="kMode" value="$(arg mode)" />
     <rosparam command="load" file="$(find local_planner)/config/local_planner_config.yaml" />   
   </node>
 

@@ -809,7 +809,7 @@ int main(int argc, char** argv)
 
   nhPrivate.getParam("kSensorType", kSensorType);
 
-  nhPrivate.getParam("Mode", kMode);
+  nhPrivate.getParam("kMode", kMode);
 
   if (kMode == "SIL")
   {
