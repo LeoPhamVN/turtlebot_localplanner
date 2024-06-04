@@ -1,0 +1,36 @@
+<launch>
+    <arg name="mode" default="SIL" />
+
+    <!-- Run StoneFish simulator -->
+    <include file="$(find turtlebot_simulation)/launch/turtlebot_integration.launch" />
+    <node pkg="stonefish_interface" type="turtlebot_teleop_convert_node.py" name="turtlebot_teleop_convert_node"/>
+    
+    <!-- RVIZ -->
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find turtlebot_description)/rviz/turtlebot_exploration.rviz"/>
+    
+    <!-- Navigation module -->
+    <node pkg="navigation" type="EKF_node.py" name="navigation">
+        <param name="mode" value="$(arg mode)" />
+    </node>
+
+    <!-- Laser handle -->
+    <include file="$(find laser_handle)/launch/laser_handle.launch">
+    </include>
+
+    <!--  -->
+    <node pkg="sensor_scan_generation" type="sensorScanGeneration" name="sensorScanGeneration" output="screen" required="true">
+        <rosparam command="load" file="$(find sensor_scan_generation)/config/sensor_scan_generation_$(arg mode)_config.yaml" />
+    </node>
+
+    <!-- Planner -->
+    <!-- <include file="$(find turtlebot_taskpriority_manipulation)/launch/integration.launch">
+    </include> -->
+
+    <!-- Local Planner -->
+    <include file="$(find local_planner)/launch/local_planner.launch">
+        <param name="kMode" value="$(arg mode)" />
+    </include>
+
+    <!-- Aruco node -->
+    <node pkg="turtlebot_taskpriority_manipulation" type="aruco_pose_detector_node.py" name="aruco_pose_detector_node"/>
+</launch>
