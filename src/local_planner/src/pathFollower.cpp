@@ -350,15 +350,6 @@ int main(int argc, char** argv)
         cmd_vel.header.stamp = ros::Time().fromSec(odomTime);
         if (fabs(vehicleSpeed) <= kMaxAccel / 100.0) cmd_vel.twist.linear.x = 0;
         else cmd_vel.twist.linear.x = vehicleSpeed;
-
-        // if (vehicleYawRate < 0.7 && vehicleYawRate > 0.1) 
-        // {
-        //   vehicleYawRate = 0.7;
-        // }
-        // else if (vehicleYawRate < -0.1 && vehicleYawRate > -0.7)
-        // {
-        //   vehicleYawRate = -0.5;
-        // }
         
         cmd_vel.twist.angular.z = vehicleYawRate;
         pubSpeed.publish(cmd_vel);
