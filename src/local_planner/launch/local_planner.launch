@@ -1,5 +1,5 @@
 <launch>
-  <arg name="mode" default="SIL" />
+  <arg name="mode" default="HIL" />
 
   <node pkg="local_planner" type="localPlanner" name="localPlanner" output="screen" required="true">
     <param name="kPathFolder" type="string" value="$(find local_planner)/paths" />
